@@ -31,7 +31,7 @@ Apple TV saknar en vanlig inbyggd webbläsare. Visa webbsidan via en kompatibel 
 ## Android säger "Något gick fel. Appen har inte installerats."
 Tidigare APK-filer kan vara signerade med en annan nyckel. Det går då inte att uppdatera samma Android-paket direkt.
 
-**Rekommenderad säker lösning:** På GitHub Actions finns efter ett lyckat bygge artefakten Sions-Sanger-APK, som innehåller två filer:
+**Rekommenderad säker lösning:** På GitHub Actions finns efter ett lyckat bygge artefakten Sions-Sanger-TV-v1.3-Bygge-[nummer], som innehåller två filer:
 - **Sions-Sanger-TV-v1.3.apk** (rekommenderad): separat app med annat paket-id, se.sionssanger.tv. Installera den bredvid tidigare Sions Sånger utan att avinstallera den gamla.
 - **Sions-Sanger-v1.3.apk**: befintligt paket-id, se.sionssanger.app. Kan ge signaturkonflikt mot tidigare installationer.
 
@@ -46,4 +46,4 @@ Från detta bygge återanvänds Gradles debug-signeringsnyckel genom GitHub Acti
 ## Utveckling
 Originalprojektet finns i ZIP-arkivet i GitHub-repot. Under GitHub Actions-bygget integrerar tv/integrate.py filerna tv/SionsTvServer.java, tv/tv-display.html och tv/tv-controls.js före Gradle-kompilering. Appversionen blir 1.3.
 
-Båda APK-filerna laddas ned i ZIP-artefakten Sions-Sanger-APK under GitHub Actions.
+Båda APK-filerna laddas ned i ZIP-artefakten Sions-Sanger-TV-v1.3-Bygge-[nummer] under GitHub Actions.
