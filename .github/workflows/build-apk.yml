@@ -1,0 +1,47 @@
+name: Bygg Sions Sånger APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/build-apk.yml'
+      - 'Sions_Sanger_Android_Officiell_Build_1.2.zip'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Hämta projektet
+        uses: actions/checkout@v4
+      - name: Packa upp Android-källkoden
+        shell: bash
+        run: |
+          test -s Sions_Sanger_Android_Officiell_Build_1.2.zip
+          mkdir -p android-source
+          unzip -q Sions_Sanger_Android_Officiell_Build_1.2.zip -d android-source
+      - name: Installera Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Installera Android SDK
+        uses: android-actions/setup-android@v3
+      - name: Installera Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+      - name: Installera Android API 35
+        run: sdkmanager 'platforms;android-35' 'build-tools;35.0.0'
+      - name: Bygg appens APK
+        run: gradle -p android-source --no-daemon :app:assembleDebug
+      - name: Kontrollera installationsfilen
+        run: test -s android-source/app/build/outputs/apk/debug/app-debug.apk
+      - name: Spara APK för nedladdning
+        uses: actions/upload-artifact@v4
+        with:
+          name: Sions-Sanger-APK
+          path: android-source/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
