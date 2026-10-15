@@ -17,34 +17,66 @@ jobs:
     steps:
       - name: Hämta projektet
         uses: actions/checkout@v4
+
       - name: Packa upp Android-källkoden
         shell: bash
         run: |
           test -s Sions_Sanger_Android_Officiell_Build_1.2.zip
           mkdir -p android-source
           unzip -q Sions_Sanger_Android_Officiell_Build_1.2.zip -d android-source
+
       - name: Installera Java 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
+
       - name: Installera Android SDK
         uses: android-actions/setup-android@v4
+
       - name: Installera Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.11.1'
+
+      - name: Återanvänd signeringsnyckeln mellan byggen
+        uses: actions/cache@v4
+        with:
+          path: ~/.android/debug.keystore
+          key: sions-sanger-debug-key-2026-v1
+
       - name: Installera Android API 35
         run: sdkmanager 'platforms;android-35' 'build-tools;35.0.0'
-      - name: Installera TV-presentation utan att ändra sångerna
+
+      - name: Lägg till TV-läge utan att ändra sångerna
         run: python3 tv/integrate.py android-source
-      - name: Bygg appens APK
-        run: gradle -p android-source --no-daemon :app:assembleDebug
-      - name: Kontrollera installationsfilen
-        run: test -s android-source/app/build/outputs/apk/debug/app-debug.apk
-      - name: Spara APK för nedladdning
+
+      - name: Bygg APK för befintlig app
+        run: |
+          gradle -p android-source --no-daemon :app:assembleDebug
+          test -s android-source/app/build/outputs/apk/debug/app-debug.apk
+          cp android-source/app/build/outputs/apk/debug/app-debug.apk Sions-Sanger-v1.3.apk
+
+      - name: Skapa separat installerbar TV-app
+        run: python3 tv/create_separate_tv_app.py android-source
+
+      - name: Bygg separat TV-APK
+        run: |
+          gradle -p android-source --no-daemon :app:assembleDebug
+          test -s android-source/app/build/outputs/apk/debug/app-debug.apk
+          cp android-source/app/build/outputs/apk/debug/app-debug.apk Sions-Sanger-TV-v1.3.apk
+
+      - name: Kontrollera båda APK-filerna
+        run: |
+          test -s Sions-Sanger-v1.3.apk
+          test -s Sions-Sanger-TV-v1.3.apk
+          ls -lh Sions-Sanger*.apk
+
+      - name: Ladda upp APK-filer för installation
         uses: actions/upload-artifact@v4
         with:
           name: Sions-Sanger-APK
-          path: android-source/app/build/outputs/apk/debug/app-debug.apk
+          path: |
+            Sions-Sanger-TV-v1.3.apk
+            Sions-Sanger-v1.3.apk
           if-no-files-found: error
