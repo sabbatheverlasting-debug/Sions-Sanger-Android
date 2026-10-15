@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Sions Sånger – TV</title>
+<style>
+:root { font-family: Georgia, "Times New Roman", serif; color:#fff4e5; background:#081626; }
+* { box-sizing:border-box }
+html,body { margin:0;width:100%;height:100%;overflow:hidden }
+body { background:radial-gradient(ellipse at 70% 15%,#244767 0%,#0b2341 55%,#071525 100%); transition:background .25s; }
+body.forest { background:radial-gradient(ellipse at 50% 10%,#2a524b 0%,#0b302f 50%,#061b20 100%) }
+body.dark { background:#07090d }
+body.cream { background:#f7f1e5;color:#202a35 }
+#frame { position:absolute;inset:0;padding:4vh 6vw 6vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center; }
+header { position:absolute;top:3.4vh;left:5vw;right:5vw;display:flex;justify-content:space-between;align-items:center;font-family:system-ui,-apple-system,sans-serif;color:inherit;opacity:.68;font-size:clamp(12px,1.45vw,25px) }
+header strong { font-size:clamp(13px,1.5vw,27px);letter-spacing:.12em;color:#e5c27e;font-weight:600 }
+.cream header strong {color:#695026}
+#title {font-size:clamp(21px,2.5vw,50px);font-weight:500;opacity:.86;margin:0 0 4vh;line-height:1.25;max-width:90vw;overflow-wrap:anywhere }
+#words { white-space:pre-line;overflow-wrap:break-word; font-size:clamp(26px,4.15vw,86px);font-weight:500;line-height:1.28;max-width:96%;max-height:62vh;overflow:hidden;text-shadow:0 2px 12px rgba(0,0,0,.24); }
+#words.long {font-size:clamp(22px,3.2vw,62px)}
+#words.verylong {font-size:clamp(19px,2.45vw,48px)}
+.cream #words { text-shadow:none }
+footer {position:absolute;bottom:3vh;font:clamp(13px,1.35vw,24px) system-ui,-apple-system,sans-serif;letter-spacing:.04em;opacity:.7 }
+#status {display:none;position:absolute;top:12vh;left:12vw;right:12vw;color:#fff;background:#963f35;border-radius:14px;padding:16px;font:18px system-ui;text-align:center }
+#fullscreen {position:absolute;right:2vw;bottom:2vh;padding:.55em 1em;border:1px solid #ffffff50;border-radius:12px;background:#061426aa;color:#fff;font:15px system-ui;opacity:.18;cursor:pointer }
+#fullscreen:hover,#fullscreen:focus {opacity:1}
+#blank {display:none;position:absolute;inset:0;background:#000;z-index:4}
+body.blanked #blank {display:block}
+@media (max-aspect-ratio:1/1) {#title{font-size:4vw}#words{font-size:5vw}header{font-size:2vw}}
+</style>
+</head>
+<body>
+<div id="frame">
+<header><strong>SIONS SÅNGER</strong><span id="number"></span></header>
+<h1 id="title">Sions Sånger</h1>
+<div id="words">Välj en sång i mobilappen</div>
+<footer id="section"></footer>
+</div>
+<div id="status" role="status"></div>
+<div id="blank"></div>
+<button id="fullscreen" type="button" title="Helskärm">⛶ Helskärm</button>
+<script>
+(function(){
+'use strict';
+var params=new URLSearchParams(location.search), code=params.get('code')||'';
+var title=document.getElementById('title'),words=document.getElementById('words');
+var number=document.getElementById('number'),section=document.getElementById('section');
+var status=document.getElementById('status'),errors=0,prev='';
+function render(data){
+  var signature=JSON.stringify(data);
+  if(signature===prev)return;
+  prev=signature;
+  document.body.className=(['navy','dark','forest','cream'].indexOf(data.theme)>=0?data.theme:'navy')+(data.blank?' blanked':'');
+  title.textContent=data.title||'Sions Sånger';
+  var lines=Array.isArray(data.lines)?data.lines.map(function(x){return String(x)}):[];
+  var joined=lines.join('\n');
+  words.textContent=joined;
+  words.className=joined.length>190?'verylong':joined.length>110?'long':'';
+  var nr=data.number==null?'':'SÅNG '+data.number;
+  number.textContent=nr;
+  section.textContent=(data.section||'')+(data.total?'  ·  '+(Number(data.index)+1)+' av '+data.total:'');
+}
+function poll(){
+  fetch('/state?code='+encodeURIComponent(code),{cache:'no-store'})
+    .then(function(r){if(!r.ok)throw Error('Anslutningen nekades ('+r.status+')');return r.json()})
+    .then(function(data){errors=0;status.style.display='none';render(data)})
+    .catch(function(e){errors++;if(errors>=3){status.style.display='block';status.textContent='Ingen anslutning till mobilen. Kontrollera att Sions Sånger är öppet och att båda enheterna använder samma Wi-Fi. '+e.message}});
+}
+document.getElementById('fullscreen').addEventListener('click',function(){
+ if(!document.fullscreenElement && document.documentElement.requestFullscreen)document.documentElement.requestFullscreen().catch(function(){});
+ else if(document.exitFullscreen)document.exitFullscreen();
+});
+poll();setInterval(poll,900);
+})();
+</script>
+</body>
+</html>
