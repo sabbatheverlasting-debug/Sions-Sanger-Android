@@ -66,10 +66,17 @@ jobs:
           test -s android-source/app/build/outputs/apk/debug/app-debug.apk
           cp android-source/app/build/outputs/apk/debug/app-debug.apk Sions-Sanger-TV-v1.3.apk
 
-      - name: Kontrollera båda APK-filerna
+      - name: Verifiera signering och separata paket-id
+        shell: bash
         run: |
+          AAPT="$ANDROID_HOME/build-tools/35.0.0/aapt"
+          SIGNER="$ANDROID_HOME/build-tools/35.0.0/apksigner"
           test -s Sions-Sanger-v1.3.apk
           test -s Sions-Sanger-TV-v1.3.apk
+          "$SIGNER" verify --verbose Sions-Sanger-v1.3.apk
+          "$SIGNER" verify --verbose Sions-Sanger-TV-v1.3.apk
+          "$AAPT" dump badging Sions-Sanger-v1.3.apk | grep -F "package: name='se.sionssanger.app'"
+          "$AAPT" dump badging Sions-Sanger-TV-v1.3.apk | grep -F "package: name='se.sionssanger.tv'"
           ls -lh Sions-Sanger*.apk
 
       - name: Ladda upp APK-filer för installation
