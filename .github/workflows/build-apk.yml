@@ -39,17 +39,40 @@ jobs:
         with:
           gradle-version: '8.11.1'
 
-      - name: Återanvänd signeringsnyckeln mellan byggen
-        uses: actions/cache@v4
-        with:
-          path: ~/.android/debug.keystore
-          key: sions-sanger-debug-key-2026-v1
+      - name: Återställ permanent signeringsnyckel
+        env:
+          SIONS_SIGNING_KEY_B64: ${{ secrets.SIONS_SIGNING_KEY_B64 }}
+        shell: bash
+        run: |
+          python3 - <<'PYKEY'
+          import os, base64, pathlib
+          value = os.environ.get('SIONS_SIGNING_KEY_B64', '').strip()
+          if not value:
+              raise SystemExit('Missing SIONS_SIGNING_KEY_B64 secret. Refusing to generate a replacement signing key.')
+          path = pathlib.Path('android-source/sions-signing.p12')
+          path.write_bytes(base64.b64decode(value, validate=True))
+          path.chmod(0o600)
+          PYKEY
+          keytool -exportcert -keystore android-source/sions-signing.p12 -storetype PKCS12 -storepass android -alias androiddebugkey -file "$RUNNER_TEMP/sions-cert.der"
+          echo "dd65ba4802942445bee1227499ee895f193e57834846f85d8dff92f8ef16c5c9  $RUNNER_TEMP/sions-cert.der" | sha256sum --check --status
 
       - name: Installera Android API 35
         run: sdkmanager 'platforms;android-35' 'build-tools;35.0.0'
 
       - name: Lägg till TV-läge utan att ändra sångerna
         run: python3 tv/integrate.py android-source
+
+      - name: Använd fast signering och stigande versionsnummer
+        env:
+          SIONS_VERSION_CODE: ${{ github.run_number }}
+        run: |
+          python3 - <<'PYCONFIG'
+          import os, pathlib
+          path = pathlib.Path('android-source/app/build.gradle')
+          code = 1000 + int(os.environ['SIONS_VERSION_CODE'])
+          with path.open('a') as f:
+              f.write("\nandroid { signingConfigs { debug { storeFile rootProject.file('sions-signing.p12'); storePassword 'android'; keyAlias 'androiddebugkey'; keyPassword 'android'; storeType 'PKCS12' } }; defaultConfig { versionCode " + str(code) + " } }\n")
+          PYCONFIG
 
       - name: Bygg APK för befintlig app
         run: |
@@ -73,10 +96,13 @@ jobs:
           SIGNER="$ANDROID_HOME/build-tools/35.0.0/apksigner"
           test -s Sions-Sanger-v1.9.apk
           test -s Sions-Sanger-TV-v1.9.apk
-          "$SIGNER" verify --verbose Sions-Sanger-v1.9.apk
-          "$SIGNER" verify --verbose Sions-Sanger-TV-v1.9.apk
+          "$SIGNER" verify --verbose --print-certs Sions-Sanger-v1.9.apk
+          "$SIGNER" verify --verbose --print-certs Sions-Sanger-TV-v1.9.apk
           "$AAPT" dump badging Sions-Sanger-v1.9.apk | grep -F "package: name='se.sionssanger.app'"
           "$AAPT" dump badging Sions-Sanger-TV-v1.9.apk | grep -F "package: name='se.sionssanger.tv'"
+          for APK in Sions-Sanger-v1.9.apk Sions-Sanger-TV-v1.9.apk; do
+            "$SIGNER" verify --print-certs "$APK" | grep -F 'Signer #1 certificate SHA-256 digest: dd65ba4802942445bee1227499ee895f193e57834846f85d8dff92f8ef16c5c9'
+          done
           ls -lh Sions-Sanger*.apk
 
       - name: Ladda upp APK-filer för installation
