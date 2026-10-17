@@ -115,11 +115,11 @@ xml = replace_once(xml, 'android:name=".MainActivity" android:exported="true"',
 manifest.write_text(xml, encoding="utf-8")
 
 build = gradle.read_text(encoding="utf-8")
-build = replace_once(build, "versionCode 3", "versionCode 5", "app/build.gradle")
-build = replace_once(build, "versionName '1.2'", "versionName '1.4'", "app/build.gradle")
+build = replace_once(build, "versionCode 3", "versionCode 6", "app/build.gradle")
+build = replace_once(build, "versionName '1.2'", "versionName '1.5'", "app/build.gradle")
 gradle.write_text(build, encoding="utf-8")
 
-print("TV-läge integrerat, APK version 1.4. Befintligt sångbibliotek oförändrat.")
+print("TV-läge integrerat, APK version 1.5. Befintligt sångbibliotek oförändrat.")
 
 
 common_target = root / "app/src/main/java/se/sabbath/tv/TvLink.java"
