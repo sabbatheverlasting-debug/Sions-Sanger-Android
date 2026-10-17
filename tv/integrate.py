@@ -47,6 +47,12 @@ html = replace_once(html,
     "config.size=Math.max(15,Math.min(35,config.size+n));saveConfig()",
     "config.size=Math.max(15,Math.min(35,config.size+n));saveConfig();window.dispatchEvent(new Event('sions-font-change'))",
     "index.html")
+# Keep titles larger than the verse text, without changing the imported song.
+html = html.replace("</style>", """
+/* Song heading hierarchy */
+.song-head h2{font-size:clamp(38px,calc(var(--lyric-size,21px)*1.7),64px);font-weight:650;line-height:1.14;margin:12px auto;max-width:100%;white-space:normal;overflow-wrap:anywhere}
+.song-title{font-size:19px;line-height:1.3}
+</style>""", 1)
 index.write_text(html, encoding="utf-8")
 
 text = java.read_text(encoding="utf-8")
@@ -119,8 +125,8 @@ xml = replace_once(xml, 'android:name=".MainActivity" android:exported="true"',
 manifest.write_text(xml, encoding="utf-8")
 
 build = gradle.read_text(encoding="utf-8")
-build = replace_once(build, "versionCode 3", "versionCode 11", "app/build.gradle")
-build = replace_once(build, "versionName '1.2'", "versionName '1.10'", "app/build.gradle")
+build = replace_once(build, "versionCode 3", "versionCode 12", "app/build.gradle")
+build = replace_once(build, "versionName '1.2'", "versionName '1.11'", "app/build.gradle")
 gradle.write_text(build, encoding="utf-8")
 
 print("TV-läge integrerat, APK version 1.10. Befintligt sångbibliotek oförändrat.")
