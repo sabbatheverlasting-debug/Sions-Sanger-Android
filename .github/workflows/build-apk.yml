@@ -78,7 +78,7 @@ jobs:
         run: |
           gradle -p android-source --no-daemon :app:assembleDebug
           test -s android-source/app/build/outputs/apk/debug/app-debug.apk
-          cp android-source/app/build/outputs/apk/debug/app-debug.apk Sions-Sanger-v1.9.apk
+          cp android-source/app/build/outputs/apk/debug/app-debug.apk Sions-Sanger-v1.10.apk
 
       - name: Skapa separat installerbar TV-app
         run: python3 tv/create_separate_tv_app.py android-source
@@ -87,20 +87,20 @@ jobs:
         run: |
           gradle -p android-source --no-daemon :app:assembleDebug
           test -s android-source/app/build/outputs/apk/debug/app-debug.apk
-          cp android-source/app/build/outputs/apk/debug/app-debug.apk Sions-Sanger-TV-v1.9.apk
+          cp android-source/app/build/outputs/apk/debug/app-debug.apk Sions-Sanger-TV-v1.10.apk
 
       - name: Verifiera signering och separata paket-id
         shell: bash
         run: |
           AAPT="$ANDROID_HOME/build-tools/35.0.0/aapt"
           SIGNER="$ANDROID_HOME/build-tools/35.0.0/apksigner"
-          test -s Sions-Sanger-v1.9.apk
-          test -s Sions-Sanger-TV-v1.9.apk
-          "$SIGNER" verify --verbose --print-certs Sions-Sanger-v1.9.apk
-          "$SIGNER" verify --verbose --print-certs Sions-Sanger-TV-v1.9.apk
-          "$AAPT" dump badging Sions-Sanger-v1.9.apk | grep -F "package: name='se.sionssanger.app'"
-          "$AAPT" dump badging Sions-Sanger-TV-v1.9.apk | grep -F "package: name='se.sionssanger.tv'"
-          for APK in Sions-Sanger-v1.9.apk Sions-Sanger-TV-v1.9.apk; do
+          test -s Sions-Sanger-v1.10.apk
+          test -s Sions-Sanger-TV-v1.10.apk
+          "$SIGNER" verify --verbose --print-certs Sions-Sanger-v1.10.apk
+          "$SIGNER" verify --verbose --print-certs Sions-Sanger-TV-v1.10.apk
+          "$AAPT" dump badging Sions-Sanger-v1.10.apk | grep -F "package: name='se.sionssanger.app'"
+          "$AAPT" dump badging Sions-Sanger-TV-v1.10.apk | grep -F "package: name='se.sionssanger.tv'"
+          for APK in Sions-Sanger-v1.10.apk Sions-Sanger-TV-v1.10.apk; do
             "$SIGNER" verify --print-certs "$APK" | grep -F 'Signer #1 certificate SHA-256 digest: dd65ba4802942445bee1227499ee895f193e57834846f85d8dff92f8ef16c5c9'
           done
           ls -lh Sions-Sanger*.apk
@@ -108,8 +108,8 @@ jobs:
       - name: Ladda upp APK-filer för installation
         uses: actions/upload-artifact@v4
         with:
-          name: Sions-Sanger-TV-v1.9-Bygge-${{ github.run_number }}
+          name: Sions-Sanger-TV-v1.10-Bygge-${{ github.run_number }}
           path: |
-            Sions-Sanger-TV-v1.9.apk
-            Sions-Sanger-v1.9.apk
+            Sions-Sanger-TV-v1.10.apk
+            Sions-Sanger-v1.10.apk
           if-no-files-found: error

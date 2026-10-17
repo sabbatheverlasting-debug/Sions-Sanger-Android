@@ -53,7 +53,7 @@
   var lastLibrary='',lastStatus='';
   function refresh(force){var raw=native.audioList();if(raw!==lastLibrary||force){lastLibrary=raw;library=parse(raw);updateChoices();if(catalogOpen)catalogRows();}status=parse(native.audioStatus());decorate();
    if($('sau-import-status'))$('sau-import-status').textContent=(status.busy?'Importerar… ': '')+(status.importStatus||'')+(status.error?' · '+status.error:'');
-   var number=key(data().activeSong);if($('sau-play')){
+   var number=key(data().activeSong);if($('sau-tv-output')&&document.activeElement!==$('sau-tv-output'))$('sau-tv-output').checked=!!status.targetTv;if($('sau-play')){
     var same=status.number===number,has=!!library[number];$('sau-play').textContent=has?(same&&status.playing?'Pausa':'Spela'):'Lägg till musik';
     $('sau-seek').disabled=!same||!status.ready;$('sau-seek').max=String(same?status.duration||1:1);
     if(document.activeElement!==$('sau-seek'))$('sau-seek').value=String(same?status.position:0);

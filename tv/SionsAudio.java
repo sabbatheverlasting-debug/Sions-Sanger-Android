@@ -28,6 +28,7 @@ public final class SionsAudio {
  private int generation;
  private volatile boolean targetTv;
  private long lastBroadcast;
+ private boolean announcedTv;
  private String importAssign="";
  public SionsAudio(Activity a){activity=a;prefs=a.getSharedPreferences("sions-audio-v1",0);folder=new File(a.getFilesDir(),"sions-audio");folder.mkdirs();targetTv=prefs.getBoolean("targetTv",false);ui.post(tick);}
  private final Runnable tick=new Runnable(){public void run(){if(player!=null&&ready)try{position=player.getCurrentPosition();duration=player.getDuration();playing=player.isPlaying();}catch(Exception ignored){}if(System.currentTimeMillis()-lastBroadcast>550){lastBroadcast=System.currentTimeMillis();publishAudio();}ui.postDelayed(this,300);}};
@@ -58,9 +59,10 @@ public final class SionsAudio {
   JSONObject item=index().optJSONObject(current);
   Intent i=new Intent("se.churchshow.tvbridge.AUDIO").setComponent(new ComponentName("se.churchshow.tvbridge","se.churchshow.tvbridge.SlideReceiver"));
   boolean enabled=targetTv&&item!=null&&ready;
+  if(!enabled&&!announcedTv)return;
   JSONObject meta=new JSONObject().put("enabled",enabled).put("track",item==null?"":item.optString("file")).put("playing",playing).put("position",position/1000.0).put("duration",duration/1000.0);
   if(enabled){Uri uri=new Uri.Builder().scheme("content").authority(activity.getPackageName()+".audio").appendPath(item.getString("file")).build();activity.grantUriPermission("se.churchshow.tvbridge",uri,Intent.FLAG_GRANT_READ_URI_PERMISSION);i.setData(uri).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);}
-  i.putExtra("audio",meta.toString());activity.sendBroadcast(i);
+  i.putExtra("audio",meta.toString());activity.sendBroadcast(i);announcedTv=enabled;
  }catch(Exception ignored){}}
  public void pause(){ui.post(()->{if(player!=null&&ready)try{player.pause();position=player.getCurrentPosition();playing=false;publishAudio();}catch(Exception ignored){}});}
  public void seek(String number,double seconds){ui.post(()->{if(player!=null&&ready&&current.equals(number)&&Double.isFinite(seconds)&&seconds>=0)try{player.seekTo((int)Math.min(duration,seconds*1000));position=(long)Math.min(duration,seconds*1000);}catch(Exception ignored){}});}
