@@ -120,3 +120,12 @@ build = replace_once(build, "versionName '1.2'", "versionName '1.3'", "app/build
 gradle.write_text(build, encoding="utf-8")
 
 print("TV-läge integrerat, APK version 1.3. Befintligt sångbibliotek oförändrat.")
+
+
+common_target = root / "app/src/main/java/se/sabbath/tv/TvLink.java"
+common_target.parent.mkdir(parents=True, exist_ok=True)
+shutil.copy2(tv_folder / "TvLink.java", common_target)
+text = java.read_text(encoding="utf-8")
+text = text.replace("setContentView(webView);", "setContentView(webView);\n        se.sabbath.tv.TvLink.attach(this,webView);", 1)
+text = text.replace('if (tvServer != null) tvServer.update(value);', 'if (tvServer != null) tvServer.update(value);\n            try { org.json.JSONObject v=new org.json.JSONObject(value); org.json.JSONArray lines=v.optJSONArray("lines"); StringBuilder words=new StringBuilder(); if(lines!=null)for(int i=0;i<lines.length();i++){if(i>0)words.append("\\n");words.append(lines.optString(i));} org.json.JSONObject slide=new org.json.JSONObject().put("title",v.optString("title")).put("text",words.toString()).put("label",v.optString("section")).put("blank",v.optBoolean("blank")); se.sabbath.tv.TvLink.slide(MainActivity.this,slide.toString()); } catch(Exception ignored){}')
+java.write_text(text, encoding="utf-8")
