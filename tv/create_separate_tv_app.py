@@ -22,3 +22,6 @@ if source.count(old) != 1:
 manifest.write_text(source.replace(old, new, 1), encoding="utf-8")
 
 print("Separat testapp skapad: se.sionssanger.tv, Sions Sånger TV")
+
+import subprocess
+subprocess.run([sys.executable, str(Path(__file__).with_name("icons.py")), str(root), "tv"], check=True)

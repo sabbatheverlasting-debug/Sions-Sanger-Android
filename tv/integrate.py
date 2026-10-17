@@ -119,11 +119,11 @@ xml = replace_once(xml, 'android:name=".MainActivity" android:exported="true"',
 manifest.write_text(xml, encoding="utf-8")
 
 build = gradle.read_text(encoding="utf-8")
-build = replace_once(build, "versionCode 3", "versionCode 7", "app/build.gradle")
-build = replace_once(build, "versionName '1.2'", "versionName '1.6'", "app/build.gradle")
+build = replace_once(build, "versionCode 3", "versionCode 8", "app/build.gradle")
+build = replace_once(build, "versionName '1.2'", "versionName '1.7'", "app/build.gradle")
 gradle.write_text(build, encoding="utf-8")
 
-print("TV-läge integrerat, APK version 1.6. Befintligt sångbibliotek oförändrat.")
+print("TV-läge integrerat, APK version 1.7. Befintligt sångbibliotek oförändrat.")
 
 
 common_target = root / "app/src/main/java/se/sabbath/tv/TvLink.java"
@@ -153,3 +153,6 @@ text = text.replace('    private class AppBridge {', '''    private class AppBri
         }
 ''', 1)
 java.write_text(text, encoding="utf-8")
+
+import subprocess
+subprocess.run([sys.executable, str(tv_folder / "icons.py"), str(root)], check=True)
