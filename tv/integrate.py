@@ -33,7 +33,7 @@ html = index.read_text(encoding="utf-8")
 html = replace_once(
     html,
     "refreshLibrary();saveConfig();renderModes();renderCategories();renderList();",
-    "window.SionsTvData = function() { return {library: library, activeSong: activeSong}; };\n"
+    "window.SionsTvData = function() { return {library: library, activeSong: activeSong, fontSize: config.size}; };\n"
     "refreshLibrary();saveConfig();renderModes();renderCategories();renderList();",
     "index.html",
 )
@@ -43,6 +43,10 @@ html = replace_once(
     '<script src="tv-controls.js"></script>\n</body>',
     "index.html",
 )
+html = replace_once(html,
+    "config.size=Math.max(15,Math.min(35,config.size+n));saveConfig()",
+    "config.size=Math.max(15,Math.min(35,config.size+n));saveConfig();window.dispatchEvent(new Event('sions-font-change'))",
+    "index.html")
 index.write_text(html, encoding="utf-8")
 
 text = java.read_text(encoding="utf-8")
@@ -115,11 +119,11 @@ xml = replace_once(xml, 'android:name=".MainActivity" android:exported="true"',
 manifest.write_text(xml, encoding="utf-8")
 
 build = gradle.read_text(encoding="utf-8")
-build = replace_once(build, "versionCode 3", "versionCode 6", "app/build.gradle")
-build = replace_once(build, "versionName '1.2'", "versionName '1.5'", "app/build.gradle")
+build = replace_once(build, "versionCode 3", "versionCode 7", "app/build.gradle")
+build = replace_once(build, "versionName '1.2'", "versionName '1.6'", "app/build.gradle")
 gradle.write_text(build, encoding="utf-8")
 
-print("TV-läge integrerat, APK version 1.5. Befintligt sångbibliotek oförändrat.")
+print("TV-läge integrerat, APK version 1.6. Befintligt sångbibliotek oförändrat.")
 
 
 common_target = root / "app/src/main/java/se/sabbath/tv/TvLink.java"
@@ -127,7 +131,7 @@ common_target.parent.mkdir(parents=True, exist_ok=True)
 shutil.copy2(tv_folder / "TvLink.java", common_target)
 text = java.read_text(encoding="utf-8")
 text = text.replace("setContentView(webView);", "setContentView(webView);\n        se.sabbath.tv.TvLink.attach(this,webView);", 1)
-text = text.replace('if (tvServer != null) tvServer.update(value);', 'if (tvServer != null) tvServer.update(value);\n            try { org.json.JSONObject v=new org.json.JSONObject(value); org.json.JSONArray lines=v.optJSONArray("lines"); StringBuilder words=new StringBuilder(); if(lines!=null)for(int i=0;i<lines.length();i++){if(i>0)words.append("\\n");words.append(lines.optString(i));} org.json.JSONObject slide=new org.json.JSONObject().put("title",v.optString("title")).put("text",words.toString()).put("label",v.optString("section")).put("blank",v.optBoolean("blank")); se.sabbath.tv.TvLink.slide(MainActivity.this,slide.toString()); } catch(Exception ignored){}')
+text = text.replace('if (tvServer != null) tvServer.update(value);', 'if (tvServer != null) tvServer.update(value);\n            try { org.json.JSONObject v=new org.json.JSONObject(value); org.json.JSONArray lines=v.optJSONArray("lines"); StringBuilder words=new StringBuilder(); if(lines!=null)for(int i=0;i<lines.length();i++){if(i>0)words.append("\\n");words.append(lines.optString(i));} org.json.JSONObject slide=new org.json.JSONObject().put("title",v.optString("title")).put("text",words.toString()).put("label",v.optString("section")).put("font",v.optDouble("font",100)).put("blank",v.optBoolean("blank")); se.sabbath.tv.TvLink.slide(MainActivity.this,slide.toString()); } catch(Exception ignored){}')
 java.write_text(text, encoding="utf-8")
 
 # Sions uses its own verse controls instead of the generic text-page menu.

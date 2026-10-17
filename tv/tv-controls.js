@@ -29,6 +29,7 @@
         index: at,
         total: selected.sections.length,
         theme: theme,
+        font: Math.max(75, Math.min(135, 100 + ((Number(data().fontSize) || 21) - 21) * ((Number(data().fontSize) || 21) < 21 ? 25 / 6 : 2.5))),
         blank: blank
       };
       try { bridge.tvUpdate(JSON.stringify(state)); }
@@ -308,6 +309,7 @@
     var songBody = document.getElementById('songBody');
     if (songBody) new MutationObserver(function() { decorateReader(); }).observe(songBody, {childList:true,subtree:true});
     decorateReader();
+    window.addEventListener('sions-font-change', function() { if (selected) sync(); });
     updateDisplay();
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);

@@ -57,6 +57,9 @@ function render(data){
   var joined=lines.join('\n');
   words.textContent=joined;
   words.className=joined.length>190?'verylong':joined.length>110?'long':'';
+  var scale=Math.max(75,Math.min(135,Number(data.font)||100))/100;
+  var base=joined.length>190?Math.max(19,Math.min(48,innerWidth*.0245)):joined.length>110?Math.max(22,Math.min(62,innerWidth*.032)):Math.max(26,Math.min(86,innerWidth*.0415));
+  words.style.fontSize=(base*scale)+'px';
   var nr=data.number==null?'':'SÅNG '+data.number;
   number.textContent=nr;
   section.textContent=(data.section||'')+(data.total?'  ·  '+(Number(data.index)+1)+' av '+data.total:'');
