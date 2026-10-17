@@ -119,11 +119,11 @@ xml = replace_once(xml, 'android:name=".MainActivity" android:exported="true"',
 manifest.write_text(xml, encoding="utf-8")
 
 build = gradle.read_text(encoding="utf-8")
-build = replace_once(build, "versionCode 3", "versionCode 8", "app/build.gradle")
-build = replace_once(build, "versionName '1.2'", "versionName '1.7'", "app/build.gradle")
+build = replace_once(build, "versionCode 3", "versionCode 9", "app/build.gradle")
+build = replace_once(build, "versionName '1.2'", "versionName '1.8'", "app/build.gradle")
 gradle.write_text(build, encoding="utf-8")
 
-print("TV-läge integrerat, APK version 1.7. Befintligt sångbibliotek oförändrat.")
+print("TV-läge integrerat, APK version 1.8. Befintligt sångbibliotek oförändrat.")
 
 
 common_target = root / "app/src/main/java/se/sabbath/tv/TvLink.java"
@@ -156,3 +156,31 @@ java.write_text(text, encoding="utf-8")
 
 import subprocess
 subprocess.run([sys.executable, str(tv_folder / "icons.py"), str(root)], check=True)
+
+# Native private audio storage and player; HTML carries only controls and metadata.
+shutil.copy2(tv_folder / "SionsAudio.java", java_folder / "SionsAudio.java")
+shutil.copy2(tv_folder / "audio-controls.js", assets / "audio-controls.js")
+html = index.read_text(encoding="utf-8")
+html = html.replace("fontSize: config.size};", "fontSize: config.size, openSong: openSong};", 1)
+html = html.replace('</body>', '<script src="audio-controls.js"></script>\n</body>', 1)
+index.write_text(html, encoding="utf-8")
+text = java.read_text(encoding="utf-8")
+text = text.replace("    private SionsTvServer tvServer;", "    private SionsTvServer tvServer;\n    private SionsAudio audio;", 1)
+text = text.replace("        setContentView(webView);", "        setContentView(webView);\n        audio = new SionsAudio(this);", 1)
+text = text.replace("        super.onActivityResult(requestCode, resultCode, data);", "        super.onActivityResult(requestCode, resultCode, data);\n        if(requestCode == SionsAudio.PICK) { audio.result(resultCode, data); return; }", 1)
+text = text.replace("    @Override protected void onDestroy() {", "    @Override protected void onDestroy() {\n        if(audio != null) audio.destroy();", 1)
+audio_methods = """
+        @JavascriptInterface public void audioImport() { audio.pick(""); }
+        @JavascriptInterface public void audioImportFor(String n) { audio.pick(n); }
+        @JavascriptInterface public String audioList() { return audio.list(); }
+        @JavascriptInterface public String audioStatus() { return audio.status(); }
+        @JavascriptInterface public void audioPlay(String n) { audio.play(n); }
+        @JavascriptInterface public void audioPause() { audio.pause(); }
+        @JavascriptInterface public void audioSeek(String n, double seconds) { audio.seek(n,seconds); }
+        @JavascriptInterface public void audioAssign(String n, String source) { audio.assign(n,source); }
+        @JavascriptInterface public String audioCues(String n) { return audio.cues(n); }
+        @JavascriptInterface public void audioCue(String n, int verse, double seconds) { audio.cue(n,verse,seconds); }
+        @JavascriptInterface public void audioClearCues(String n) { audio.clearCues(n); }
+"""
+text = text.replace("    private class AppBridge {", "    private class AppBridge {" + audio_methods, 1)
+java.write_text(text, encoding="utf-8")

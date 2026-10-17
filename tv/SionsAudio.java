@@ -1,0 +1,61 @@
+package se.sionssanger.app;
+
+import android.app.Activity;
+import android.content.*;
+import android.media.MediaPlayer;
+import android.net.Uri;
+import android.os.Handler;
+import android.os.Looper;
+import android.provider.OpenableColumns;
+import org.json.*;
+import java.io.*;
+import java.util.*;
+import java.util.regex.*;
+import java.util.zip.*;
+
+/** Private local audio library, accessed only via the Android document picker. */
+public final class SionsAudio {
+ public static final int PICK=1240;
+ private final Activity activity;
+ private final SharedPreferences prefs;
+ private final File folder;
+ private final Handler ui=new Handler(Looper.getMainLooper());
+ private MediaPlayer player;
+ private volatile String current="",error="",importStatus="";
+ private volatile boolean busy,ready;
+ private volatile long position,duration;
+ private volatile boolean playing;
+ private int generation;
+ private String importAssign="";
+ public SionsAudio(Activity a){activity=a;prefs=a.getSharedPreferences("sions-audio-v1",0);folder=new File(a.getFilesDir(),"sions-audio");folder.mkdirs();ui.post(tick);}
+ private final Runnable tick=new Runnable(){public void run(){if(player!=null&&ready)try{position=player.getCurrentPosition();duration=player.getDuration();playing=player.isPlaying();}catch(Exception ignored){}ui.postDelayed(this,300);}};
+ public void pick(String assigned){ui.post(()->{if(busy)return;importAssign=assigned.matches("\\d+[a-z]?")?assigned:"";Intent i=new Intent(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType("*/*");i.putExtra(Intent.EXTRA_MIME_TYPES,new String[]{"audio/*","application/zip","application/x-zip-compressed","application/octet-stream"});i.putExtra(Intent.EXTRA_ALLOW_MULTIPLE,true);try{activity.startActivityForResult(i,PICK);}catch(Exception e){error="Kunde inte öppna filväljaren";}});}
+ public void result(int result,Intent data){if(result!=Activity.RESULT_OK||data==null)return;List<Uri> uris=new ArrayList<>();if(data.getClipData()!=null){for(int n=0;n<data.getClipData().getItemCount();n++)uris.add(data.getClipData().getItemAt(n).getUri());}else if(data.getData()!=null)uris.add(data.getData());if(busy)return;final String assigned=importAssign;busy=true;importStatus="Importerar ljud…";new Thread(()->{int count=0;List<String> issues=new ArrayList<>();try{for(Uri u:uris){String name=name(u);try(InputStream raw=activity.getContentResolver().openInputStream(u)){if(raw==null)continue;if(name.toLowerCase(Locale.ROOT).endsWith(".zip")){if(!assigned.isEmpty())throw new IOException("Välj en ljudfil vid sången. Importera ZIP från Ljudbibliotek.");try(ZipInputStream z=new ZipInputStream(new BufferedInputStream(raw))){ZipEntry e;int entries=0;while((e=z.getNextEntry())!=null){if(++entries>1000)throw new IOException("För många filer i ZIP");if(!e.isDirectory()&&isAudio(e.getName()))try{if(save(z,e.getName(),""))count++;}catch(Exception ex){issues.add(new File(e.getName()).getName());}z.closeEntry();}}}else if(isAudio(name)){if(save(raw,name,uris.size()==1?assigned:""))count++;}else issues.add(name);}}importStatus=count+" ljudfiler importerade"+(issues.isEmpty()?"":" · "+issues.size()+" filer kunde inte importeras");}catch(Exception e){importStatus=count+" importerade · importen avbröts: "+e.getMessage();}finally{busy=false;}},"sions-audio-import").start();}
+ private String name(Uri u){try(android.database.Cursor c=activity.getContentResolver().query(u,new String[]{OpenableColumns.DISPLAY_NAME},null,null,null)){if(c!=null&&c.moveToFirst())return c.getString(0);}catch(Exception ignored){}return "audio";}
+ private boolean isAudio(String name){return name.toLowerCase(Locale.ROOT).matches(".*\\.(mp3|opus|ogg|m4a|wav|aac|flac)$");}
+ private boolean save(InputStream in,String original,String forced)throws Exception{
+  String name=new File(original).getName();Matcher m=Pattern.compile("^(\\d+)([a-zA-Z]?)[.․ _-]*([^/]+)$").matcher(name);boolean numbered=m.matches();if(!numbered&&forced.isEmpty())throw new IOException("Sångnummer saknas");
+  String number=!forced.isEmpty()?forced:Integer.toString(Integer.parseInt(m.group(1)))+m.group(2).toLowerCase(Locale.ROOT);
+  String ext=name.substring(name.lastIndexOf('.')).toLowerCase(Locale.ROOT);
+  String title=numbered?m.group(3):name;title=title.substring(0,title.lastIndexOf('.')).replace('_',' ').trim();
+  File temp=File.createTempFile("import-",".tmp",folder);long bytes=0;
+  try(OutputStream out=new FileOutputStream(temp)){byte[] b=new byte[32768];int n;while((n=in.read(b))!=-1){bytes+=n;if(bytes>100L*1024*1024)throw new IOException("Ljudfilen är för stor");out.write(b,0,n);}}catch(Exception e){temp.delete();throw e;}
+  if(bytes==0){temp.delete();throw new IOException("Tom ljudfil");}
+  File target=new File(folder,number+"-"+java.util.UUID.randomUUID()+ext);
+  if(!temp.renameTo(target)){temp.delete();throw new IOException("Kunde inte spara ljudet");}
+  synchronized(this){JSONObject index=index();JSONObject old=index.optJSONObject(number);JSONObject item=new JSONObject().put("number",number).put("title",title).put("file",target.getName());index.put(number,item);if(!prefs.edit().putString("index",index.toString()).remove("cues-"+number).commit()){target.delete();throw new IOException("Kunde inte spara registret");}}
+  return true;
+ }
+ private synchronized JSONObject index(){try{return new JSONObject(prefs.getString("index","{}"));}catch(Exception e){return new JSONObject();}}
+ public void assign(String number,String source){if(!number.matches("\\d+[a-z]?"))return;synchronized(this){try{JSONObject idx=index(),item=idx.optJSONObject(source);if(item==null)return;JSONObject copy=new JSONObject(item.toString()).put("number",number);idx.put(number,copy);prefs.edit().putString("index",idx.toString()).remove("cues-"+number).apply();}catch(Exception ignored){}}}
+ public String list(){return index().toString();}
+ public String status(){try{return new JSONObject().put("number",current).put("playing",playing).put("ready",ready).put("position",position/1000.0).put("duration",duration/1000.0).put("error",error).put("busy",busy).put("importStatus",importStatus).toString();}catch(Exception e){return "{}";}}
+ public void play(String number){ui.post(()->{error="";JSONObject item=index().optJSONObject(number);if(item==null){error="Importera ljudet till den här sången först";return;}try{if(player!=null&&ready&&current.equals(number)){player.start();playing=true;return;}release();int ticket=++generation;current=number;position=0;duration=0;player=new MediaPlayer();MediaPlayer p=player;p.setDataSource(new File(folder,item.getString("file")).getAbsolutePath());p.setOnPreparedListener(mp->{if(ticket!=generation)return;ready=true;duration=mp.getDuration();mp.start();playing=true;});p.setOnCompletionListener(mp->{playing=false;position=duration;});p.setOnErrorListener((mp,what,extra)->{error="Ljudfilen kunde inte spelas. Prova MP3-versionen.";playing=false;ready=false;return true;});p.prepareAsync();}catch(Exception e){error="Kunde inte öppna ljudfilen";release();}});}
+ public void pause(){ui.post(()->{if(player!=null&&ready)try{player.pause();position=player.getCurrentPosition();playing=false;}catch(Exception ignored){}});}
+ public void seek(String number,double seconds){ui.post(()->{if(player!=null&&ready&&current.equals(number)&&Double.isFinite(seconds)&&seconds>=0)try{player.seekTo((int)Math.min(duration,seconds*1000));position=(long)Math.min(duration,seconds*1000);}catch(Exception ignored){}});}
+ public String cues(String number){return prefs.getString("cues-"+number,"{}");}
+ public void cue(String number,int verse,double seconds){if(!number.matches("\\d+[a-z]?")||verse<0||verse>200||!Double.isFinite(seconds)||seconds<0)return;synchronized(this){try{JSONObject c=new JSONObject(cues(number));c.put(Integer.toString(verse),seconds);prefs.edit().putString("cues-"+number,c.toString()).apply();}catch(Exception ignored){}}}
+ public void clearCues(String number){if(number.matches("\\d+[a-z]?"))prefs.edit().remove("cues-"+number).apply();}
+ private void release(){generation++;ready=false;playing=false;if(player!=null){try{player.release();}catch(Exception ignored){}player=null;}}
+ public void destroy(){ui.removeCallbacksAndMessages(null);release();}
+}

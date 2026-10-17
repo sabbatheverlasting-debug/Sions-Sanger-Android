@@ -55,7 +55,7 @@ jobs:
         run: |
           gradle -p android-source --no-daemon :app:assembleDebug
           test -s android-source/app/build/outputs/apk/debug/app-debug.apk
-          cp android-source/app/build/outputs/apk/debug/app-debug.apk Sions-Sanger-v1.7.apk
+          cp android-source/app/build/outputs/apk/debug/app-debug.apk Sions-Sanger-v1.8.apk
 
       - name: Skapa separat installerbar TV-app
         run: python3 tv/create_separate_tv_app.py android-source
@@ -64,26 +64,26 @@ jobs:
         run: |
           gradle -p android-source --no-daemon :app:assembleDebug
           test -s android-source/app/build/outputs/apk/debug/app-debug.apk
-          cp android-source/app/build/outputs/apk/debug/app-debug.apk Sions-Sanger-TV-v1.7.apk
+          cp android-source/app/build/outputs/apk/debug/app-debug.apk Sions-Sanger-TV-v1.8.apk
 
       - name: Verifiera signering och separata paket-id
         shell: bash
         run: |
           AAPT="$ANDROID_HOME/build-tools/35.0.0/aapt"
           SIGNER="$ANDROID_HOME/build-tools/35.0.0/apksigner"
-          test -s Sions-Sanger-v1.7.apk
-          test -s Sions-Sanger-TV-v1.7.apk
-          "$SIGNER" verify --verbose Sions-Sanger-v1.7.apk
-          "$SIGNER" verify --verbose Sions-Sanger-TV-v1.7.apk
-          "$AAPT" dump badging Sions-Sanger-v1.7.apk | grep -F "package: name='se.sionssanger.app'"
-          "$AAPT" dump badging Sions-Sanger-TV-v1.7.apk | grep -F "package: name='se.sionssanger.tv'"
+          test -s Sions-Sanger-v1.8.apk
+          test -s Sions-Sanger-TV-v1.8.apk
+          "$SIGNER" verify --verbose Sions-Sanger-v1.8.apk
+          "$SIGNER" verify --verbose Sions-Sanger-TV-v1.8.apk
+          "$AAPT" dump badging Sions-Sanger-v1.8.apk | grep -F "package: name='se.sionssanger.app'"
+          "$AAPT" dump badging Sions-Sanger-TV-v1.8.apk | grep -F "package: name='se.sionssanger.tv'"
           ls -lh Sions-Sanger*.apk
 
       - name: Ladda upp APK-filer för installation
         uses: actions/upload-artifact@v4
         with:
-          name: Sions-Sanger-TV-v1.7-Bygge-${{ github.run_number }}
+          name: Sions-Sanger-TV-v1.8-Bygge-${{ github.run_number }}
           path: |
-            Sions-Sanger-TV-v1.7.apk
-            Sions-Sanger-v1.7.apk
+            Sions-Sanger-TV-v1.8.apk
+            Sions-Sanger-v1.8.apk
           if-no-files-found: error

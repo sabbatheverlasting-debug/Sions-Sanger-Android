@@ -252,6 +252,8 @@
       sync();
       decorateReader();
     }
+    window.sionsTvShowVerse = showVerse;
+    window.sionsTvSelection = function() { return selected ? {song:selected,index:at} : null; };
     window.sionsTvNextVerse = function(delta) {
       var active = data().activeSong;
       showVerse(active && selected && key(active) === key(selected) ? at + delta : 0);
