@@ -37,6 +37,9 @@
    opts.appendChild(button('Koppla valt ljud',function(){if(choose.value){native.audioAssign(number,choose.value);refresh(true);}}));
    opts.appendChild(button('Importera ljud till denna sång',function(){native.audioImportFor(number);}));
    opts.appendChild(button('Öppna ljudbibliotek',openCatalog));
+   var tvLabel=document.createElement('label'),tvCheck=document.createElement('input');tvCheck.type='checkbox';tvCheck.id='sau-tv-output';tvCheck.checked=!!status.targetTv;
+   tvCheck.onchange=function(){native.audioTargetTv(tvCheck.checked);};tvLabel.appendChild(tvCheck);tvLabel.appendChild(document.createTextNode(' Ljud på TV (mobilen tyst)'));opts.appendChild(tvLabel);
+   var tvHelp=document.createElement('small');tvHelp.textContent='Starta mobilbryggan och anslut LG-appen. Om TV:n nekar automatisk uppspelning: tryck Aktivera ljud på TV:n. MP3 rekommenderas för TV.';opts.appendChild(tvHelp);
    var help=document.createElement('small');help.textContent='Markera en vers, spela ljudet och spara versstarten när den börjar. Upprepa för varje vers. Aktivera sedan Följ ljudet.';opts.appendChild(help);
    opts.appendChild(button('Spara start för vald vers',function(){var sel=selection();if(status.ready&&status.number===number&&sel&&key(sel.song)===number){native.audioCue(number,sel.index,status.position);refresh(true);}else{$('sau-info').textContent='Välj en vers på TV och starta sångens ljud först.';}}));
    opts.appendChild(button('Rensa versstarter',function(){native.audioClearCues(number);lastCue='';refresh(true);}));

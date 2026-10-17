@@ -119,11 +119,11 @@ xml = replace_once(xml, 'android:name=".MainActivity" android:exported="true"',
 manifest.write_text(xml, encoding="utf-8")
 
 build = gradle.read_text(encoding="utf-8")
-build = replace_once(build, "versionCode 3", "versionCode 9", "app/build.gradle")
-build = replace_once(build, "versionName '1.2'", "versionName '1.8'", "app/build.gradle")
+build = replace_once(build, "versionCode 3", "versionCode 10", "app/build.gradle")
+build = replace_once(build, "versionName '1.2'", "versionName '1.9'", "app/build.gradle")
 gradle.write_text(build, encoding="utf-8")
 
-print("TV-läge integrerat, APK version 1.8. Befintligt sångbibliotek oförändrat.")
+print("TV-läge integrerat, APK version 1.9. Befintligt sångbibliotek oförändrat.")
 
 
 common_target = root / "app/src/main/java/se/sabbath/tv/TvLink.java"
@@ -183,4 +183,13 @@ audio_methods = """
         @JavascriptInterface public void audioClearCues(String n) { audio.clearCues(n); }
 """
 text = text.replace("    private class AppBridge {", "    private class AppBridge {" + audio_methods, 1)
+java.write_text(text, encoding="utf-8")
+
+shutil.copy2(tv_folder / "AudioProvider.java", java_folder / "AudioProvider.java")
+xml=manifest.read_text(encoding="utf-8")
+xml=xml.replace("    <application", '<queries><package android:name="se.churchshow.tvbridge" /></queries>\n    <application', 1)
+xml=xml.replace("</application>", '<provider android:name="se.sionssanger.app.AudioProvider" android:authorities="${applicationId}.audio" android:exported="false" android:grantUriPermissions="true" />\n    </application>', 1)
+manifest.write_text(xml, encoding="utf-8")
+text=java.read_text(encoding="utf-8")
+text=text.replace("    private class AppBridge {", "    private class AppBridge {\n        @JavascriptInterface public void audioTargetTv(boolean enabled) { audio.target(enabled); }", 1)
 java.write_text(text, encoding="utf-8")
