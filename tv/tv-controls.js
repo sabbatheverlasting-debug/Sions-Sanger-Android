@@ -236,6 +236,61 @@
       if (!panel.hidden) { hidePanel(); return true; }
       return false;
     };
+
+    // Direct verse selection in the ordinary song reader.
+    var directBar = null;
+    function showVerse(index) {
+      var song = data().activeSong || selected;
+      if (!song || !song.sections || !song.sections.length) return;
+      selected = song;
+      at = Math.max(0, Math.min(song.sections.length - 1, index));
+      blank = false;
+      sync();
+      decorateReader();
+    }
+    window.sionsTvNextVerse = function(delta) {
+      var active = data().activeSong;
+      showVerse(active && selected && key(active) === key(selected) ? at + delta : 0);
+    };
+    function decorateReader() {
+      var song = data().activeSong, body = document.getElementById('songBody');
+      if (!song || !body) return;
+      var stanzas = body.querySelectorAll('.stanza');
+      Array.prototype.forEach.call(stanzas, function(stanza, index) {
+        if (stanza.querySelector('.stv-show-verse')) return;
+        var button = document.createElement('button');
+        button.type = 'button'; button.className = 'stv-btn stv-show-verse';
+        button.textContent = 'Visa ' + label(song.sections[index]).toLowerCase() + ' på TV';
+        button.style.cssText = 'display:block;margin:12px 0;grid-column:1/-1;font:600 16px system-ui';
+        button.onclick = function() { showVerse(index); };
+        stanza.appendChild(button);
+      });
+      if (!body.querySelector('#stv-reader-remote')) {
+        directBar = document.createElement('div');
+        directBar.id = 'stv-reader-remote';
+        directBar.style.cssText = 'position:sticky;top:0;z-index:20;background:#172f45;padding:12px;border-radius:12px;margin:8px;display:flex;flex-wrap:wrap;gap:8px;color:white;font:16px system-ui';
+        var connect = document.createElement('button');
+        connect.className = 'stv-btn secondary'; connect.textContent = 'Anslut TV';
+        connect.onclick = function() { try { bridge.tvConnect(); } catch(e) { setMessage('Öppna Sabbath TV – mobilbrygga.'); } };
+        var prev = document.createElement('button');
+        prev.id = 'stv-reader-prev'; prev.className = 'stv-btn'; prev.textContent = '‹ Föregående vers';
+        prev.onclick = function() { window.sionsTvNextVerse(-1); };
+        var nextButton = document.createElement('button');
+        nextButton.id = 'stv-reader-next'; nextButton.className = 'stv-btn'; nextButton.textContent = 'Nästa vers ›';
+        nextButton.onclick = function() { window.sionsTvNextVerse(1); };
+        var info = document.createElement('span'); info.id = 'stv-reader-status';
+        directBar.appendChild(connect); directBar.appendChild(prev); directBar.appendChild(nextButton); directBar.appendChild(info);
+        body.insertBefore(directBar, body.firstChild);
+      }
+      var active = selected && key(selected) === key(song);
+      $('stv-reader-prev').disabled = !active || at === 0;
+      $('stv-reader-next').disabled = active && at >= song.sections.length - 1;
+      var statusText = active ? label(part()) + ' visas på TV' : 'Tryck på Visa vid en vers';
+      if ($('stv-reader-status').textContent !== statusText) $('stv-reader-status').textContent = statusText;
+    }
+    var songBody = document.getElementById('songBody');
+    if (songBody) new MutationObserver(function() { decorateReader(); }).observe(songBody, {childList:true,subtree:true});
+    decorateReader();
     updateDisplay();
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);

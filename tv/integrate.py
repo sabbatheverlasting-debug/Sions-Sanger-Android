@@ -115,11 +115,11 @@ xml = replace_once(xml, 'android:name=".MainActivity" android:exported="true"',
 manifest.write_text(xml, encoding="utf-8")
 
 build = gradle.read_text(encoding="utf-8")
-build = replace_once(build, "versionCode 3", "versionCode 4", "app/build.gradle")
-build = replace_once(build, "versionName '1.2'", "versionName '1.3'", "app/build.gradle")
+build = replace_once(build, "versionCode 3", "versionCode 5", "app/build.gradle")
+build = replace_once(build, "versionName '1.2'", "versionName '1.4'", "app/build.gradle")
 gradle.write_text(build, encoding="utf-8")
 
-print("TV-läge integrerat, APK version 1.3. Befintligt sångbibliotek oförändrat.")
+print("TV-läge integrerat, APK version 1.4. Befintligt sångbibliotek oförändrat.")
 
 
 common_target = root / "app/src/main/java/se/sabbath/tv/TvLink.java"
@@ -128,4 +128,24 @@ shutil.copy2(tv_folder / "TvLink.java", common_target)
 text = java.read_text(encoding="utf-8")
 text = text.replace("setContentView(webView);", "setContentView(webView);\n        se.sabbath.tv.TvLink.attach(this,webView);", 1)
 text = text.replace('if (tvServer != null) tvServer.update(value);', 'if (tvServer != null) tvServer.update(value);\n            try { org.json.JSONObject v=new org.json.JSONObject(value); org.json.JSONArray lines=v.optJSONArray("lines"); StringBuilder words=new StringBuilder(); if(lines!=null)for(int i=0;i<lines.length();i++){if(i>0)words.append("\\n");words.append(lines.optString(i));} org.json.JSONObject slide=new org.json.JSONObject().put("title",v.optString("title")).put("text",words.toString()).put("label",v.optString("section")).put("blank",v.optBoolean("blank")); se.sabbath.tv.TvLink.slide(MainActivity.this,slide.toString()); } catch(Exception ignored){}')
+java.write_text(text, encoding="utf-8")
+
+# Sions uses its own verse controls instead of the generic text-page menu.
+common = common_target.read_text(encoding="utf-8")
+common = common.replace('button.setText("TV");button.setContentDescription', 'button.setVisibility(View.GONE);button.setText("TV");button.setContentDescription', 1)
+common = common.replace('link.update(new JSONObject(json));link.jpeg=null;', 'link.enabled=true;link.update(new JSONObject(json));link.jpeg=null;', 1)
+common_target.write_text(common, encoding="utf-8")
+text = java.read_text(encoding="utf-8")
+text = text.replace('    private class AppBridge {', '''    private class AppBridge {
+        @JavascriptInterface public void tvConnect() {
+            runOnUiThread(() -> {
+                try {
+                    startActivity(new Intent().setComponent(new android.content.ComponentName(
+                        "se.churchshow.tvbridge", "se.churchshow.tvbridge.MainActivity")).putExtra("start", true));
+                } catch (android.content.ActivityNotFoundException e) {
+                    Toast.makeText(MainActivity.this, "Installera Sabbath TV – mobilbrygga först", Toast.LENGTH_LONG).show();
+                }
+            });
+        }
+''', 1)
 java.write_text(text, encoding="utf-8")
