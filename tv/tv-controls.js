@@ -105,14 +105,14 @@
     panel.innerHTML = '<div class="stv-inner">' +
       '<div class="stv-heading"><h1>Sions Sånger · TV</h1><button id="stv-close" class="stv-btn secondary">Stäng ✕</button></div>' +
       '<p class="stv-muted">Styr sångerna här. På TV:n syns endast vald vers i liggande format.</p>' +
-      '<div class="stv-card"><div class="stv-strong">1. Anslut din TV</div>' +
+      '<div class="stv-card"><div class="stv-strong">1. Gemensam Sabbath TV-anslutning</div><p class="stv-muted">Samma kod används av alla appar. Koden finns i Sabbath TV – mobilbrygga. Koppla TV:n där en gång.</p><div class="stv-flex"><button class="stv-btn" id="stv-connect">Anslut TV</button><button class="stv-btn secondary" id="stv-stop">Avsluta TV och ljud</button></div><details><summary>Äldre visning i TV-webbläsare</summary>' +
       '<p class="stv-muted">Anslut TV och mobil till samma Wi-Fi. Öppna adressen nedan i TV:ns webbläsare (till exempel LG eller webbläsare på Google TV). Låt appen vara öppen och mobilen vara vaken.</p>' +
       '<div id="stv-url" class="stv-address"></div><div class="stv-flex" style="margin-top:10px">' +
       '<button class="stv-btn" id="stv-copy">Kopiera TV-adress</button>' +
       '<button class="stv-btn secondary" id="stv-refresh">Uppdatera adress</button></div>' +
       '<div id="sions-tv-message" role="status"></div>' +
-      '<p class="stv-muted">Chromecast utan webbläsare: använd knappen Skärmspegling nedan och Androids skärmcasting. Apple TV: visa TV-adressen via AirPlay från en Mac/iPhone, eller använd en kompatibel webbläsarapp på Apple TV.</p></div>' +
-      '<div class="stv-card"><div class="stv-strong">2. Välj sång</div>' +
+      '<p class="stv-muted">Chromecast utan webbläsare: använd knappen Skärmspegling nedan och Androids skärmcasting. Apple TV: visa TV-adressen via AirPlay från en Mac/iPhone, eller använd en kompatibel webbläsarapp på Apple TV.</p>' +
+      '</details></div><div class="stv-card"><div class="stv-strong">2. Välj sång</div>' +
       '<p class="stv-muted">Sök på sångnummer, titel eller ord i sången. Även importerade JSON-sånger ingår.</p>' +
       '<input id="sions-tv-search" type="search" placeholder="Sök nummer eller text..." autocomplete="off" aria-label="Sök sång">' +
       '<div id="sions-tv-results"></div></div>' +
@@ -206,6 +206,9 @@
       mirrored = false; mirror.hidden = true; panel.hidden = false;
       try { bridge.tvFullscreen(false); bridge.tvKeepAwake(true); } catch(e) {}
     }
+    function endTv(){selected=null;blank=true;try{bridge.tvStop();}catch(e){}setMessage('TV-visningen och ljudet avslutas.');updateDisplay();}
+    $('stv-connect').onclick=function(){try{bridge.tvConnect();}catch(e){setMessage('Installera Sabbath TV – mobilbrygga.');}};
+    $('stv-stop').onclick=endTv;
     open.onclick = showPanel; shortcut.onclick = showPanel;
     $('stv-close').onclick = hidePanel;
     $('stv-prev').onclick = function () { next(-1); };
@@ -304,6 +307,7 @@
         button.textContent = 'Nästa vers ›';
         button.onclick = function() { window.sionsTvNextVerse(1); };
         row.appendChild(button);
+        var end=document.createElement('button');end.type='button';end.className='stv-btn secondary';end.textContent='Avsluta TV';end.onclick=endTv;row.appendChild(end);
       }
       var nextButton = $('stv-reader-next');
       if (nextButton) nextButton.disabled = !!selected && key(selected) === key(song) && at >= song.sections.length - 1;
@@ -317,3 +321,4 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();
 })();
+

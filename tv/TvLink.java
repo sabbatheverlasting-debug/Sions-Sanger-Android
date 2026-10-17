@@ -55,6 +55,7 @@ public final class TvLink implements Application.ActivityLifecycleCallbacks {
    }catch(Exception ignored){}
   });
  }
+ public static void stop(Activity a){a.runOnUiThread(()->{TvLink l=links.get(a);if(l!=null){l.blank=true;l.send();l.enabled=false;l.current=null;}a.sendBroadcast(new Intent("se.churchshow.tvbridge.STOP").setComponent(new ComponentName("se.churchshow.tvbridge","se.churchshow.tvbridge.SlideReceiver")));});}
  public static void slide(Activity a,String json){
   a.runOnUiThread(()->{TvLink link=links.get(a);if(link==null)return;try{link.update(new JSONObject(json));link.jpeg=null;if(link.enabled)link.send();}catch(Exception ignored){}});
  }
@@ -109,3 +110,4 @@ public final class TvLink implements Application.ActivityLifecycleCallbacks {
  @Override public void onActivityStopped(Activity a){}
  @Override public void onActivitySaveInstanceState(Activity a,Bundle b){}
 }
+

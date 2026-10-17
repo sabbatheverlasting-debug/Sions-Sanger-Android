@@ -147,6 +147,7 @@ common = common.replace('link.update(new JSONObject(json));link.jpeg=null;', 'li
 common_target.write_text(common, encoding="utf-8")
 text = java.read_text(encoding="utf-8")
 text = text.replace('    private class AppBridge {', '''    private class AppBridge {
+        @JavascriptInterface public void tvStop() { if(audio!=null)audio.pause();se.sabbath.tv.TvLink.stop(MainActivity.this); }
         @JavascriptInterface public void tvConnect() {
             runOnUiThread(() -> {
                 try {
