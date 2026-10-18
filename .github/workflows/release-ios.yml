@@ -1,0 +1,80 @@
+name: Signera iOS och skicka till TestFlight
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  testflight:
+    runs-on: macos-15
+    timeout-minutes: 30
+    env:
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      IOS_DISTRIBUTION_P12_BASE64: ${{ secrets.IOS_DISTRIBUTION_P12_BASE64 }}
+      IOS_DISTRIBUTION_PASSWORD: ${{ secrets.IOS_DISTRIBUTION_PASSWORD }}
+      IOS_PROVISION_PROFILE_BASE64: ${{ secrets.IOS_PROVISION_PROFILE_BASE64 }}
+      ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+      ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+      ASC_PRIVATE_KEY: ${{ secrets.ASC_PRIVATE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Kontrollera Apples signeringsuppgifter
+        run: |
+          python3 - <<'PY'
+          import os
+          names=['APPLE_TEAM_ID','IOS_DISTRIBUTION_P12_BASE64','IOS_DISTRIBUTION_PASSWORD','IOS_PROVISION_PROFILE_BASE64','ASC_KEY_ID','ASC_ISSUER_ID','ASC_PRIVATE_KEY']
+          missing=[n for n in names if not os.environ.get(n)]
+          if missing: raise SystemExit('Lägg först in dessa GitHub Actions secrets: '+', '.join(missing))
+          PY
+      - name: Förbered projekt
+        run: |
+          brew install xcodegen
+          python3 ios/scripts/prepare_web.py
+          sips -z 1024 1024 ios/SionsSanger/Assets.xcassets/AppIcon.appiconset/AppIcon-source.png --out ios/SionsSanger/Assets.xcassets/AppIcon.appiconset/AppIcon.png
+          rm ios/SionsSanger/Assets.xcassets/AppIcon.appiconset/AppIcon-source.png
+          cd ios && xcodegen generate
+      - name: Installera tillfällig signering
+        run: |
+          python3 - <<'PY'
+          import os,base64,pathlib,secrets
+          root=pathlib.Path(os.environ['RUNNER_TEMP'])
+          for env,name in [('IOS_DISTRIBUTION_P12_BASE64','signing.p12'),('IOS_PROVISION_PROFILE_BASE64','profile.mobileprovision')]:
+            p=root/name;p.write_bytes(base64.b64decode(os.environ[env],validate=True));p.chmod(0o600)
+          with open(os.environ['GITHUB_ENV'],'a') as f:f.write('BUILD_KEYCHAIN_PASSWORD='+secrets.token_hex(24)+'\n')
+          key=pathlib.Path.home()/'.appstoreconnect/private_keys'/('AuthKey_'+os.environ['ASC_KEY_ID']+'.p8')
+          key.parent.mkdir(parents=True,exist_ok=True);key.write_text(os.environ['ASC_PRIVATE_KEY']);key.chmod(0o600)
+          PY
+          security create-keychain -p "$BUILD_KEYCHAIN_PASSWORD" "$RUNNER_TEMP/ios-build.keychain-db"
+          security set-keychain-settings -lut 21600 "$RUNNER_TEMP/ios-build.keychain-db"
+          security unlock-keychain -p "$BUILD_KEYCHAIN_PASSWORD" "$RUNNER_TEMP/ios-build.keychain-db"
+          security import "$RUNNER_TEMP/signing.p12" -P "$IOS_DISTRIBUTION_PASSWORD" -A -t cert -f pkcs12 -k "$RUNNER_TEMP/ios-build.keychain-db"
+          security set-key-partition-list -S apple-tool:,apple: -k "$BUILD_KEYCHAIN_PASSWORD" "$RUNNER_TEMP/ios-build.keychain-db"
+          security list-keychains -d user -s "$RUNNER_TEMP/ios-build.keychain-db" "$HOME/Library/Keychains/login.keychain-db"
+          security cms -D -i "$RUNNER_TEMP/profile.mobileprovision" > "$RUNNER_TEMP/profile.plist"
+          python3 - <<'PY'
+          import os,plistlib,pathlib,shutil
+          p=plistlib.load(open(pathlib.Path(os.environ['RUNNER_TEMP'])/'profile.plist','rb'))
+          assert p['TeamIdentifier'][0]==os.environ['APPLE_TEAM_ID'],'Profile team mismatch'
+          assert p['Entitlements']['application-identifier']==os.environ['APPLE_TEAM_ID']+'.se.sionssanger.tv','Profile app ID mismatch'
+          dest=pathlib.Path.home()/'Library/MobileDevice/Provisioning Profiles';dest.mkdir(parents=True,exist_ok=True)
+          shutil.copyfile(pathlib.Path(os.environ['RUNNER_TEMP'])/'profile.mobileprovision',dest/(p['UUID']+'.mobileprovision'))
+          with open(os.environ['GITHUB_ENV'],'a') as f:f.write('IOS_PROFILE_UUID='+p['UUID']+'\n')
+          plistlib.dump({'method':'app-store-connect','teamID':os.environ['APPLE_TEAM_ID'],'signingStyle':'manual','provisioningProfiles':{'se.sionssanger.tv':p['UUID']},'manageAppVersionAndBuildNumber':False},open('ExportOptions.plist','wb'))
+          PY
+      - name: Arkivera och exportera IPA
+        run: |
+          xcodebuild -project ios/SionsSanger.xcodeproj -scheme SionsSanger -configuration Release -destination 'generic/platform=iOS' -archivePath build/SionsSanger.xcarchive CURRENT_PROJECT_VERSION=$((10000 + ${{ github.run_number }})) DEVELOPMENT_TEAM="$APPLE_TEAM_ID" CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY='Apple Distribution' PROVISIONING_PROFILE_SPECIFIER="$IOS_PROFILE_UUID" archive
+          xcodebuild -exportArchive -archivePath build/SionsSanger.xcarchive -exportPath build/ipa -exportOptionsPlist ExportOptions.plist
+      - name: Skicka till App Store Connect för TestFlight
+        run: |
+          xcrun altool --upload-app --type ios --file build/ipa/SionsSanger.ipa --apiKey "$ASC_KEY_ID" --apiIssuer "$ASC_ISSUER_ID"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Sions-Sanger-iOS-signerad-${{ github.run_number }}
+          path: build/ipa/*.ipa
+          if-no-files-found: error
+      - name: Rensa tillfällig signering
+        if: always()
+        run: |
+          security delete-keychain "$RUNNER_TEMP/ios-build.keychain-db" || true
+          rm -f "$RUNNER_TEMP/signing.p12" "$RUNNER_TEMP/profile.mobileprovision" "$RUNNER_TEMP/profile.plist"
+          rm -f "$HOME/.appstoreconnect/private_keys/AuthKey_${ASC_KEY_ID}.p8"

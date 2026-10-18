@@ -1,0 +1,65 @@
+name: Bygg iPhone och iPad
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['ios/**', 'tv/**', '.github/workflows/build-ios.yml']
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Förbered iOS-projekt
+        run: |
+          brew install xcodegen
+          python3 ios/scripts/prepare_web.py
+          sips -z 1024 1024 ios/SionsSanger/Assets.xcassets/AppIcon.appiconset/AppIcon-source.png --out ios/SionsSanger/Assets.xcassets/AppIcon.appiconset/AppIcon.png
+          rm ios/SionsSanger/Assets.xcassets/AppIcon.appiconset/AppIcon-source.png
+          cd ios && xcodegen generate
+      - name: Kontrollera JavaScript och tomt bibliotek
+        run: |
+          node --check ios/SionsSanger/Web/ios-bridge.js
+          node --check ios/SionsSanger/Web/tv-controls.js
+          node --check ios/SionsSanger/Web/audio-controls.js
+          python3 - <<'PY'
+          import json,re,pathlib
+          html=pathlib.Path('ios/SionsSanger/Web/index.html').read_text()
+          assert json.loads(re.search(r'<script[^>]*id="initialSongs"[^>]*>(.*?)</script>',html,re.S)[1])['songs']==[]
+          print('Verified: zero preinstalled songs')
+          PY
+      - name: Bygg för iPhone-simulator
+        run: |
+          set -o pipefail
+          xcodebuild -project ios/SionsSanger.xcodeproj -scheme SionsSanger -configuration Debug -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath build/simulator CODE_SIGNING_ALLOWED=NO build > simulator-build.log 2>&1 || { tail -n 160 simulator-build.log; exit 1; }
+      - name: Provstarta iPhone-appen
+        run: |
+          DEVICE=$(xcrun simctl list devices available --json | python3 -c 'import json,sys; d=json.load(sys.stdin); print(next(x["udid"] for group in d["devices"].values() for x in group if "iPhone" in x["name"]))')
+          xcrun simctl boot "$DEVICE"
+          xcrun simctl bootstatus "$DEVICE" -b
+          xcrun simctl install "$DEVICE" build/simulator/Build/Products/Debug-iphonesimulator/SionsSanger.app
+          xcrun simctl launch "$DEVICE" se.sionssanger.tv
+          sleep 5
+          xcrun simctl spawn "$DEVICE" launchctl list | grep se.sionssanger.tv
+          xcrun simctl io "$DEVICE" screenshot build/iPhone-start.png
+      - name: Bygg osignerat iPhone-arkiv
+        run: |
+          xcodebuild -project ios/SionsSanger.xcodeproj -scheme SionsSanger -configuration Release -destination 'generic/platform=iOS' -archivePath build/SionsSanger-iOS-Unsigned.xcarchive CURRENT_PROJECT_VERSION=${{ github.run_number }} CODE_SIGNING_ALLOWED=NO archive > device-build.log 2>&1 || { tail -n 160 device-build.log; exit 1; }
+          echo 'Detta arkiv är provbyggt men kan inte installeras innan Apple-signering är konfigurerad.' > build/LAS_MIG.txt
+      - name: Spara provbygge och simulatorbild
+        uses: actions/upload-artifact@v4
+        with:
+          name: Sions-Sanger-iOS-Provbygge-${{ github.run_number }}
+          path: |
+            build/SionsSanger-iOS-Unsigned.xcarchive
+            build/iPhone-start.png
+            build/LAS_MIG.txt
+          if-no-files-found: error
+      - name: Spara byggloggar
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: iOS-byggloggar-${{ github.run_number }}
+          path: '*-build.log'

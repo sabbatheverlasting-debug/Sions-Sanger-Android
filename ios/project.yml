@@ -1,0 +1,41 @@
+name: SionsSanger
+options:
+  bundleIdPrefix: se.sionssanger
+  deploymentTarget:
+    iOS: '16.0'
+settings:
+  base:
+    SWIFT_VERSION: '5.0'
+    MARKETING_VERSION: '1.0'
+    CURRENT_PROJECT_VERSION: '1'
+targets:
+  SionsSanger:
+    type: application
+    platform: iOS
+    sources:
+      - path: SionsSanger
+        excludes: [Web, Assets.xcassets]
+    resources:
+      - path: SionsSanger/Web
+        type: folder
+      - path: SionsSanger/Assets.xcassets
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: se.sionssanger.tv
+        INFOPLIST_FILE: SionsSanger/Info.plist
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        TARGETED_DEVICE_FAMILY: '1,2'
+        SUPPORTS_MACCATALYST: NO
+    dependencies:
+      - sdk: WebKit.framework
+      - sdk: AVKit.framework
+      - sdk: Network.framework
+schemes:
+  SionsSanger:
+    build:
+      targets:
+        SionsSanger: all
+    run:
+      config: Debug
+    archive:
+      config: Release

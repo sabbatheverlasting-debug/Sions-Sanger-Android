@@ -1,0 +1,7 @@
+SionsSanger/Web/
+SionsSanger/Assets.xcassets/
+SionsSanger.xcodeproj/
+build/
+*.p12
+*.p8
+*.mobileprovision
