@@ -36,6 +36,9 @@ jobs:
           xcodebuild -project ios/SionsSanger.xcodeproj -scheme SionsSanger -configuration Debug -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath build/simulator CODE_SIGNING_ALLOWED=NO build > simulator-build.log 2>&1 || { tail -n 160 simulator-build.log; exit 1; }
       - name: Provstarta iPhone-appen
         run: |
+          test -s build/simulator/Build/Products/Debug-iphonesimulator/SionsSanger.app/Web/index.html
+          test -s build/simulator/Build/Products/Debug-iphonesimulator/SionsSanger.app/Web/ios-bridge.js
+          test -s build/simulator/Build/Products/Debug-iphonesimulator/SionsSanger.app/Assets.car
           DEVICE=$(xcrun simctl list devices available --json | python3 -c 'import json,sys; d=json.load(sys.stdin); print(next(x["udid"] for group in d["devices"].values() for x in group if "iPhone" in x["name"]))')
           xcrun simctl boot "$DEVICE"
           xcrun simctl bootstatus "$DEVICE" -b
@@ -47,6 +50,8 @@ jobs:
       - name: Bygg osignerat iPhone-arkiv
         run: |
           xcodebuild -project ios/SionsSanger.xcodeproj -scheme SionsSanger -configuration Release -destination 'generic/platform=iOS' -archivePath build/SionsSanger-iOS-Unsigned.xcarchive CURRENT_PROJECT_VERSION=${{ github.run_number }} CODE_SIGNING_ALLOWED=NO archive > device-build.log 2>&1 || { tail -n 160 device-build.log; exit 1; }
+          test -s build/SionsSanger-iOS-Unsigned.xcarchive/Products/Applications/SionsSanger.app/Web/index.html
+          test -s build/SionsSanger-iOS-Unsigned.xcarchive/Products/Applications/SionsSanger.app/Assets.car
           echo 'Detta arkiv är provbyggt men kan inte installeras innan Apple-signering är konfigurerad.' > build/LAS_MIG.txt
       - name: Spara provbygge och simulatorbild
         uses: actions/upload-artifact@v4

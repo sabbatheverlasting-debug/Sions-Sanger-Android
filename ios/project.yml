@@ -15,10 +15,11 @@ targets:
     sources:
       - path: SionsSanger
         excludes: [Web, Assets.xcassets]
-    resources:
       - path: SionsSanger/Web
         type: folder
+        buildPhase: resources
       - path: SionsSanger/Assets.xcassets
+        buildPhase: resources
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: se.sionssanger.tv
