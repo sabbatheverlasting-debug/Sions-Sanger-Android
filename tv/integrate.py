@@ -30,6 +30,10 @@ def replace_once(contents, original, new, filename):
     return contents.replace(original, new, 1)
 
 html = index.read_text(encoding="utf-8")
+html = replace_once(html,
+    "function makeSongRow(s,q){const b=el('button','song-row');b.type='button';",
+    "function makeSongRow(s,q){const b=el('button','song-row');b.type='button';b.dataset.songNumber=s.song_number==null?'':String(s.song_number);",
+    "index.html")
 html = replace_once(
     html,
     "refreshLibrary();saveConfig();renderModes();renderCategories();renderList();",
@@ -125,11 +129,11 @@ xml = replace_once(xml, 'android:name=".MainActivity" android:exported="true"',
 manifest.write_text(xml, encoding="utf-8")
 
 build = gradle.read_text(encoding="utf-8")
-build = replace_once(build, "versionCode 3", "versionCode 12", "app/build.gradle")
-build = replace_once(build, "versionName '1.2'", "versionName '1.11'", "app/build.gradle")
+build = replace_once(build, "versionCode 3", "versionCode 13", "app/build.gradle")
+build = replace_once(build, "versionName '1.2'", "versionName '1.12'", "app/build.gradle")
 gradle.write_text(build, encoding="utf-8")
 
-print("TV-läge integrerat, APK version 1.10. Befintligt sångbibliotek oförändrat.")
+print("TV-läge integrerat, APK version 1.12. Befintligt sångbibliotek oförändrat.")
 
 
 common_target = root / "app/src/main/java/se/sabbath/tv/TvLink.java"

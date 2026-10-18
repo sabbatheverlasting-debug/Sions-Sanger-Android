@@ -5,6 +5,19 @@
   var native=window.SionsAndroid;if(!native||!native.audioList)return;
   var $=function(id){return document.getElementById(id);};
   var library={},status={},following=false,lastCue='',activeKey='',catalogOpen=false;
+  var badgeCss=document.createElement('style');badgeCss.textContent='.sau-audio-badge{display:inline-flex;align-items:center;gap:4px;margin-top:5px;padding:3px 8px;border:1px solid #2f7052;border-radius:20px;background:#e3f3e9;color:#185037;font:700 12px system-ui;white-space:nowrap}';document.head.appendChild(badgeCss);
+  function decorateRegister(){
+   document.querySelectorAll('.song-row[data-song-number]').forEach(function(row){
+    var track=library[row.dataset.songNumber],badge=row.querySelector('.sau-audio-badge');
+    if(!row.dataset.audioBaseLabel)row.dataset.audioBaseLabel=row.getAttribute('aria-label')||'';
+    if(track&&track.file){
+     var format=/\.mp3$/i.test(track.file)?'MP3':'Ljud';
+     if(!badge){badge=document.createElement('span');badge.className='sau-audio-badge';var holder=row.querySelector('.song-row-body');if(holder)holder.appendChild(badge);}
+     badge.textContent='♫ '+format;badge.title=format+' kopplad till sången';
+     row.setAttribute('aria-label',row.dataset.audioBaseLabel+'. '+format+' kopplad');
+    }else{if(badge)badge.remove();row.setAttribute('aria-label',row.dataset.audioBaseLabel);}
+   });
+  }
   function key(song){return song&&song.song_number!=null?String(song.song_number):'';}
   function data(){return window.SionsTvData?window.SionsTvData():{};}
   function parse(raw){try{return JSON.parse(raw||'{}');}catch(e){return {};}}
@@ -51,7 +64,7 @@
   }
   function updateChoices(){var choose=$('sau-select');if(!choose)return;var prior=choose.value;choose.replaceChildren();var empty=document.createElement('option');empty.value='';empty.textContent='Välj ett importerat ljud';choose.appendChild(empty);Object.keys(library).sort(function(a,b){return parseInt(a)-parseInt(b)||a.localeCompare(b);}).forEach(function(n){var o=document.createElement('option');o.value=n;o.textContent=n+'. '+library[n].title;choose.appendChild(o);});choose.value=prior&&library[prior]?prior:library[activeKey]?activeKey:'';}
   var lastLibrary='',lastStatus='';
-  function refresh(force){var raw=native.audioList();if(raw!==lastLibrary||force){lastLibrary=raw;library=parse(raw);updateChoices();if(catalogOpen)catalogRows();}status=parse(native.audioStatus());decorate();
+  function refresh(force){var raw=native.audioList();if(raw!==lastLibrary||force){lastLibrary=raw;library=parse(raw);decorateRegister();updateChoices();if(catalogOpen)catalogRows();}status=parse(native.audioStatus());decorate();
    if($('sau-import-status'))$('sau-import-status').textContent=(status.busy?'Importerar… ': '')+(status.importStatus||'')+(status.error?' · '+status.error:'');
    var number=key(data().activeSong);if($('sau-tv-output')&&document.activeElement!==$('sau-tv-output'))$('sau-tv-output').checked=!!status.targetTv;if($('sau-play')){
     var same=status.number===number,has=!!library[number];$('sau-play').textContent=has?(same&&status.playing?'Pausa':'Spela'):'Lägg till musik';
@@ -64,6 +77,7 @@
    var stamp=status.number+':'+status.playing;if(catalogOpen&&stamp!==lastStatus)catalogRows();lastStatus=stamp;
   }
   var body=$('songBody');if(body)new MutationObserver(function(){decorate();}).observe(body,{childList:true});
+  ['list','favoriteList'].forEach(function(id){var root=$(id);if(root)new MutationObserver(decorateRegister).observe(root,{childList:true});});
   refresh();setInterval(function(){try{refresh();}catch(e){}},500);
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
