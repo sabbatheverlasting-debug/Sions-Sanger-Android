@@ -186,7 +186,16 @@ final class ReaderController: UIViewController, WKScriptMessageHandler, WKUIDele
         let box = UIAlertController(title: "Sions Sånger", message: message, preferredStyle: .alert)
         box.addAction(UIAlertAction(title: "OK", style: .default) { _ in completion?() }); present(box, animated: true)
     }
-    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) { publish() }
+    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        publish()
+        if ProcessInfo.processInfo.arguments.contains("--smoke-test") {
+            webView.evaluateJavaScript("JSON.stringify({count:window.SionsTvData?window.SionsTvData().library.length:-1,reader:!!document.getElementById('heroCount'),tv:typeof window.sionsTvShowVerse==='function',audio:typeof window.SionsAndroid.audioPlay==='function'})") { result, error in
+                guard error == nil, let text = result as? String,
+                      let directory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else { return }
+                try? text.write(to: directory.appendingPathComponent("smoke-result.json"), atomically: true, encoding: .utf8)
+            }
+        }
+    }
     func webView(_ webView: WKWebView, runJavaScriptAlertPanelWithMessage message: String, initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping () -> Void) { alert(message, completion: completionHandler) }
     func webView(_ webView: WKWebView, runJavaScriptConfirmPanelWithMessage message: String, initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping (Bool) -> Void) {
         let box = UIAlertController(title: "Sions Sånger", message: message, preferredStyle: .alert)

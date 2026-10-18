@@ -43,8 +43,14 @@ jobs:
           xcrun simctl boot "$DEVICE"
           xcrun simctl bootstatus "$DEVICE" -b
           xcrun simctl install "$DEVICE" build/simulator/Build/Products/Debug-iphonesimulator/SionsSanger.app
-          xcrun simctl launch "$DEVICE" se.sionssanger.tv
-          sleep 5
+          xcrun simctl launch "$DEVICE" se.sionssanger.tv --smoke-test
+          DATA=$(xcrun simctl get_app_container "$DEVICE" se.sionssanger.tv data)
+          for attempt in $(seq 1 30); do test -s "$DATA/Documents/smoke-result.json" && break; sleep 1; done
+          python3 - "$DATA/Documents/smoke-result.json" <<'PY'
+          import json,sys
+          d=json.load(open(sys.argv[1]));assert d=={'count':0,'reader':True,'tv':True,'audio':True},d
+          print('PASS: reader rendered, empty library, native audio bridge and TV controls ready')
+          PY
           xcrun simctl spawn "$DEVICE" launchctl list | grep se.sionssanger.tv
           xcrun simctl io "$DEVICE" screenshot build/iPhone-start.png
       - name: Bygg osignerat iPhone-arkiv
