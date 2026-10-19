@@ -17,6 +17,8 @@ assert len(list(re.finditer(pattern, html, re.S))) == 1
 html = re.sub(pattern, lambda m: m[1] + json.dumps({'name': 'Sions Sånger', 'language': 'sv', 'songs': []}, ensure_ascii=False) + m[3], html, flags=re.S)
 def replace(old, new):
     global html
+    if old not in html and new in html:
+        return
     assert html.count(old) == 1, old[:100]
     html = html.replace(old, new, 1)
 replace('<strong>62</strong> sånger', '<strong>0</strong> sånger')
@@ -38,11 +40,12 @@ shutil.copy2(repo / 'ios/ios-bridge.js', web / 'ios-bridge.js')
 shutil.copy2(repo / 'tv/tv-display.html', web / 'tv-display.html')
 tv = (repo / 'tv/tv-controls.js').read_text()
 start = tv.index("      '<div class=\"stv-card\"><div class=\"stv-strong\">1.")
-end = tv.index("      '</details></div><div class=\"stv-card\"><div class=\"stv-strong\">2. Välj sång</div>'", start)
+end = tv.index("\n", tv.index("2. Välj sång</div>", start)) + 1
 tv = tv[:start] + '''      '<div class="stv-card"><div class="stv-strong">1. TV och AirPlay</div>' +
       '<p class="stv-muted">För ljud: tryck AirPlay. För bild: öppna Kontrollcenter på iPhone och välj Skärmdubblering. Du kan också öppna adressen nedan i TV:ns webbläsare på samma Wi-Fi. Låt iPhone-appen vara öppen.</p>' +
       '<div class="stv-flex"><button class="stv-btn" id="stv-connect">AirPlay-ljud</button><button class="stv-btn secondary" id="stv-stop">Avsluta TV och ljud</button></div><details><summary>Visa adress för TV-webbläsare</summary>' +
       '<div id="stv-url" class="stv-address"></div><div class="stv-flex"><button class="stv-btn" id="stv-copy">Kopiera TV-adress</button><button class="stv-btn secondary" id="stv-refresh">Uppdatera adress</button></div><div id="sions-tv-message" role="status"></div>' +
+      '<div class="stv-flex"><button id="stv-mirror" class="stv-btn secondary">Skärmdubblering</button></div></details></div><div class="stv-card"><div class="stv-strong">2. Välj sång</div>' +
 ''' + tv[end:]
 tv = tv.replace('Installera Sabbath TV – mobilbrygga.', 'Öppna Kontrollcenter för skärmdubblering eller välj en AirPlay-ljudenhet.')
 (web / 'tv-controls.js').write_text(tv, encoding='utf-8')
