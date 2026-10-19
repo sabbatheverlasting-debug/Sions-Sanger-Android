@@ -105,14 +105,14 @@
     panel.innerHTML = '<div class="stv-inner">' +
       '<div class="stv-heading"><h1>Sions Sånger · TV</h1><button id="stv-close" class="stv-btn secondary">Stäng ✕</button></div>' +
       '<p class="stv-muted">Styr sångerna här. På TV:n syns endast vald vers i liggande format.</p>' +
-      '<div class="stv-card"><div class="stv-strong">1. Gemensam Sabbath TV-anslutning</div><p class="stv-muted">Samma kod används av alla appar. Koden finns i Sabbath TV – mobilbrygga. Koppla TV:n där en gång.</p><div class="stv-flex"><button class="stv-btn" id="stv-connect">Anslut TV</button><button class="stv-btn secondary" id="stv-stop">Avsluta TV och ljud</button></div><details><summary>Äldre visning i TV-webbläsare</summary>' +
+      '<div class="stv-card"><div class="stv-strong">1. Gemensam Sabbath TV-anslutning</div><p class="stv-muted">TV, Chromecast, HDMI och högtalare väljer du i Sabbath TV. Sång, vers, bakgrund och om sångljud ska följa med väljer du här.</p><div class="stv-flex"><button class="stv-btn" id="stv-connect">TV-inställningar · Sabbath TV</button><button class="stv-btn secondary" id="stv-stop">Avsluta TV och ljud</button></div><details id="stv-direct"><summary>Avancerat: direktanslutning utan Sabbath TV</summary>' +
       '<p class="stv-muted">Anslut TV och mobil till samma Wi-Fi. Öppna adressen nedan i TV:ns webbläsare (till exempel LG eller webbläsare på Google TV). Låt appen vara öppen och mobilen vara vaken.</p>' +
       '<div id="stv-url" class="stv-address"></div><div class="stv-flex" style="margin-top:10px">' +
       '<button class="stv-btn" id="stv-copy">Kopiera TV-adress</button>' +
       '<button class="stv-btn secondary" id="stv-refresh">Uppdatera adress</button></div>' +
       '<div id="sions-tv-message" role="status"></div>' +
       '<p class="stv-muted">Chromecast utan webbläsare: använd knappen Skärmspegling nedan och Androids skärmcasting. Apple TV: visa TV-adressen via AirPlay från en Mac/iPhone, eller använd en kompatibel webbläsarapp på Apple TV.</p>' +
-      '</details></div><div class="stv-card"><div class="stv-strong">2. Välj sång</div>' +
+      '<div class="stv-flex"><button id="stv-mirror" class="stv-btn secondary">Skärmspegling 16:9</button></div></details></div><div class="stv-card"><div class="stv-strong">2. Välj sång</div>' +
       '<p class="stv-muted">Sök på sångnummer, titel eller ord i sången. Även importerade JSON-sånger ingår.</p>' +
       '<input id="sions-tv-search" type="search" placeholder="Sök nummer eller text..." autocomplete="off" aria-label="Sök sång">' +
       '<div id="sions-tv-results"></div></div>' +
@@ -124,7 +124,7 @@
       '<button id="stv-next" class="stv-btn">Nästa vers ›</button></div>' +
       '<div class="stv-flex" style="margin-top:12px">' +
       '<button id="stv-blank" class="stv-btn outline">Svart TV-bild</button>' +
-      '<button id="stv-mirror" class="stv-btn secondary">Skärmspegling 16:9</button></div>' +
+      '</div>' +
       '<p class="stv-muted">Bakgrund</p><select id="stv-theme" class="stv-select" aria-label="Bakgrund">' +
       '<option value="navy">Mörkblå och guld</option><option value="dark">Svart</option>' +
       '<option value="forest">Skogsgrön</option><option value="cream">Ljus</option></select></div>' +
