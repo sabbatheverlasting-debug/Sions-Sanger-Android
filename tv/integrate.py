@@ -54,7 +54,7 @@ html = replace_once(html,
 # Keep titles larger than the verse text, without changing the imported song.
 html = html.replace("</style>", """
 /* Song heading hierarchy */
-.song-head h2{font-size:clamp(38px,calc(var(--lyric-size,21px)*1.7),64px);font-weight:650;line-height:1.15;margin:12px auto;max-width:100%;white-space:normal;overflow-wrap:anywhere}
+.song-head h2{font-size:clamp(38px,calc(var(--lyric-size,21px)*1.7),64px);font-weight:650;line-height:1.16;margin:12px auto;max-width:100%;white-space:normal;overflow-wrap:anywhere}
 .song-title{font-size:19px;line-height:1.3}
 </style>""", 1)
 index.write_text(html, encoding="utf-8")
@@ -129,11 +129,11 @@ xml = replace_once(xml, 'android:name=".MainActivity" android:exported="true"',
 manifest.write_text(xml, encoding="utf-8")
 
 build = gradle.read_text(encoding="utf-8")
-build = replace_once(build, "versionCode 3", "versionCode 16", "app/build.gradle")
-build = replace_once(build, "versionName '1.2'", "versionName '1.15'", "app/build.gradle")
+build = replace_once(build, "versionCode 3", "versionCode 17", "app/build.gradle")
+build = replace_once(build, "versionName '1.2'", "versionName '1.16'", "app/build.gradle")
 gradle.write_text(build, encoding="utf-8")
 
-print("TV-läge integrerat, APK version 1.15. Befintligt sångbibliotek oförändrat.")
+print("TV-läge integrerat, APK version 1.16. Befintligt sångbibliotek oförändrat.")
 
 
 common_target = root / "app/src/main/java/se/sabbath/tv/TvLink.java"
@@ -210,3 +210,7 @@ shutil.copy2(tv_folder / "appearance.js", assets / "appearance.js")
 html=index.read_text(encoding="utf-8")
 html=replace_once(html,"</body>",'<script src="appearance.js"></script>\n</body>',"index.html")
 index.write_text(html,encoding="utf-8")
+
+# Both apps start without any bundled lyrics. Existing imports use the same key.
+from empty_library import empty_library
+index.write_text(empty_library(index.read_text(encoding="utf-8")),encoding="utf-8")

@@ -66,6 +66,7 @@ jobs:
         run: |
           npm install --prefix "$RUNNER_TEMP/sions-colour-tests" --no-save --ignore-scripts --no-audit --no-fund jsdom@26.1.0
           CHROME_PATH="$(command -v google-chrome || command -v chromium || true)" SIONS_PREVIEW_DIR="$RUNNER_TEMP/sions-colour-previews" NODE_PATH="$RUNNER_TEMP/sions-colour-tests/node_modules" node tv/appearance.test.cjs
+          NODE_PATH="$RUNNER_TEMP/sions-colour-tests/node_modules" node tv/empty-library.test.cjs
 
       - name: Spara granskning av färgvyer
         uses: actions/upload-artifact@v4
@@ -91,7 +92,7 @@ jobs:
         run: |
           gradle -p android-source --no-daemon :app:assembleDebug
           test -s android-source/app/build/outputs/apk/debug/app-debug.apk
-          cp android-source/app/build/outputs/apk/debug/app-debug.apk Sions-Sanger-v1.15.apk
+          cp android-source/app/build/outputs/apk/debug/app-debug.apk Sions-Sanger-v1.16.apk
 
       - name: Skapa separat installerbar TV-app
         run: python3 tv/create_separate_tv_app.py android-source
@@ -100,20 +101,20 @@ jobs:
         run: |
           gradle -p android-source --no-daemon :app:assembleDebug
           test -s android-source/app/build/outputs/apk/debug/app-debug.apk
-          cp android-source/app/build/outputs/apk/debug/app-debug.apk Sions-Sanger-TV-v1.15.apk
+          cp android-source/app/build/outputs/apk/debug/app-debug.apk Sions-Sanger-TV-v1.16.apk
 
       - name: Verifiera signering och separata paket-id
         shell: bash
         run: |
           AAPT="$ANDROID_HOME/build-tools/35.0.0/aapt"
           SIGNER="$ANDROID_HOME/build-tools/35.0.0/apksigner"
-          test -s Sions-Sanger-v1.15.apk
-          test -s Sions-Sanger-TV-v1.15.apk
-          "$SIGNER" verify --verbose --print-certs Sions-Sanger-v1.15.apk
-          "$SIGNER" verify --verbose --print-certs Sions-Sanger-TV-v1.15.apk
-          "$AAPT" dump badging Sions-Sanger-v1.15.apk | grep -F "package: name='se.sionssanger.app'"
-          "$AAPT" dump badging Sions-Sanger-TV-v1.15.apk | grep -F "package: name='se.sionssanger.tv'"
-          for APK in Sions-Sanger-v1.15.apk Sions-Sanger-TV-v1.15.apk; do
+          test -s Sions-Sanger-v1.16.apk
+          test -s Sions-Sanger-TV-v1.16.apk
+          "$SIGNER" verify --verbose --print-certs Sions-Sanger-v1.16.apk
+          "$SIGNER" verify --verbose --print-certs Sions-Sanger-TV-v1.16.apk
+          "$AAPT" dump badging Sions-Sanger-v1.16.apk | grep -F "package: name='se.sionssanger.app'"
+          "$AAPT" dump badging Sions-Sanger-TV-v1.16.apk | grep -F "package: name='se.sionssanger.tv'"
+          for APK in Sions-Sanger-v1.16.apk Sions-Sanger-TV-v1.16.apk; do
             "$SIGNER" verify --print-certs "$APK" | grep -F 'Signer #1 certificate SHA-256 digest: dd65ba4802942445bee1227499ee895f193e57834846f85d8dff92f8ef16c5c9'
           done
           ls -lh Sions-Sanger*.apk
@@ -121,9 +122,9 @@ jobs:
       - name: Ladda upp APK-filer för installation
         uses: actions/upload-artifact@v4
         with:
-          name: Sions-Sanger-TV-v1.15-Bygge-${{ github.run_number }}
+          name: Sions-Sanger-TV-v1.16-Bygge-${{ github.run_number }}
           path: |
-            Sions-Sanger-TV-v1.15.apk
-            Sions-Sanger-v1.15.apk
+            Sions-Sanger-TV-v1.16.apk
+            Sions-Sanger-v1.16.apk
           if-no-files-found: error
 
