@@ -57,6 +57,8 @@
       '#sions-tv-shortcut{margin-left:8px;border:1px solid #dcb96a;border-radius:10px;padding:6px 10px;color:#17354d;background:#fae9bd;font-size:15px;font-weight:bold}',
       '#sions-tv-panel{position:fixed;inset:0;z-index:2147483000;overflow-y:auto;overscroll-behavior:contain;background:#0c1c2c;color:#f7f0e2;font:16px system-ui,-apple-system,sans-serif;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}',
       '#sions-tv-panel[hidden],#sions-tv-mirror[hidden]{display:none!important}',
+      /* Only ONE TV shortcut inside an open hymn. The floating catalogue TV button must disappear. */
+      'body:has(#songScreen.active) #sions-tv-open{display:none!important}',
       '.stv-inner{max-width:680px;margin:auto;padding:20px 18px 70px}',
       '.stv-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}.stv-heading h1{font:normal 27px Georgia,serif;color:#f2ce83;margin:0}',
       '.stv-card{background:#172f45;border:1px solid #355069;border-radius:18px;padding:18px;margin:17px 0;box-shadow:0 3px 8px #0002}',
@@ -117,6 +119,18 @@
     shortcut.id = 'sions-tv-shortcut'; shortcut.textContent = '▣ TV'; shortcut.type = 'button';
     var heading = document.querySelector('.song-top .song-actions');
     if (heading) heading.prepend(shortcut);
+    // Preserve the existing TV shortcut in the FIXED reader header; hide the
+    // catalogue's floating TV button while a song is displayed.
+    function updateTvShortcutVisibility(){
+      var song=document.getElementById('songScreen');
+      var reading=!!(song&&song.classList.contains('active'));
+      open.hidden=reading;
+      shortcut.hidden=!reading;
+    }
+    var reader=document.getElementById('songScreen');
+    if(reader)new MutationObserver(updateTvShortcutVisibility).observe(reader,{attributes:true,attributeFilter:['class','style']});
+    updateTvShortcutVisibility();
+
 
     var panel = document.createElement('section');
     panel.id = 'sions-tv-panel';
