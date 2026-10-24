@@ -91,6 +91,27 @@
     open.id = 'sions-tv-open'; open.type = 'button'; open.textContent = 'TV';
     open.title = 'Presentera sång på TV'; open.setAttribute('aria-label', 'Visa Sions Sånger på TV');
     document.body.appendChild(open);
+    // Align with the original settings icon, without replacing any symbols.
+    function alignTvWithSettings(){
+      var header=document.querySelector('#listScreen header.hero');
+      if(!header)return;
+      var buttons=Array.from(header.querySelectorAll('button'));
+      var gear=buttons.find(function(b){
+        var name=[b.id,b.className,b.title,b.getAttribute('aria-label'),b.textContent].join(' ').toLowerCase();
+        return /inställning|settings|setting|kugghjul|gear|⚙/.test(name);
+      }) || header.querySelector('.hero-top button:last-of-type');
+      if(!gear)return;
+      var rect=gear.getBoundingClientRect();
+      if(rect.width<20||rect.height<20)return;
+      var size=41;
+      open.style.top=Math.max(0,Math.round(rect.top+(rect.height-size)/2))+'px';
+      open.style.left=Math.max(8,Math.round(rect.left-size-12))+'px';
+      open.style.right='auto';
+    }
+    alignTvWithSettings();
+    window.addEventListener('resize',alignTvWithSettings);
+    window.addEventListener('orientationchange',alignTvWithSettings);
+
 
     var shortcut = document.createElement('button');
     shortcut.id = 'sions-tv-shortcut'; shortcut.textContent = '▣ TV'; shortcut.type = 'button';
