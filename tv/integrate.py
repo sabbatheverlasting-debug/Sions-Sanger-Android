@@ -171,9 +171,10 @@ subprocess.run([sys.executable, str(tv_folder / "icons.py"), str(root)], check=T
 # Native private audio storage and player; HTML carries only controls and metadata.
 shutil.copy2(tv_folder / "SionsAudio.java", java_folder / "SionsAudio.java")
 shutil.copy2(tv_folder / "audio-controls.js", assets / "audio-controls.js")
+shutil.copy2(tv_folder / "audio-mini-player.js", assets / "audio-mini-player.js")
 html = index.read_text(encoding="utf-8")
 html = html.replace("fontSize: config.size};", "fontSize: config.size, openSong: openSong};", 1)
-html = html.replace('</body>', '<script src="audio-controls.js"></script>\n</body>', 1)
+html = html.replace('</body>', '<script src="audio-controls.js"></script>\n<script src="audio-mini-player.js"></script>\n</body>', 1)
 index.write_text(html, encoding="utf-8")
 text = java.read_text(encoding="utf-8")
 text = text.replace("    private SionsTvServer tvServer;", "    private SionsTvServer tvServer;\n    private SionsAudio audio;", 1)
@@ -187,6 +188,7 @@ audio_methods = """
         @JavascriptInterface public String audioStatus() { return audio.status(); }
         @JavascriptInterface public void audioPlay(String n) { audio.play(n); }
         @JavascriptInterface public void audioPause() { audio.pause(); }
+        @JavascriptInterface public void audioStop() { audio.stop(); }
         @JavascriptInterface public void audioSeek(String n, double seconds) { audio.seek(n,seconds); }
         @JavascriptInterface public void audioAssign(String n, String source) { audio.assign(n,source); }
         @JavascriptInterface public String audioCues(String n) { return audio.cues(n); }
