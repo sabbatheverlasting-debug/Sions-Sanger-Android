@@ -236,6 +236,55 @@ html = html.replace("</style>", """
 }
 </style>""", 1)
 
+
+# The original A− and A+ controls were rendered at the END of .lyric-area,
+# which caused them to scroll out of sight. tv-controls.js moves the same
+# functional buttons directly below .song-top. Keep their row stationary;
+# no changes to the original text-size handlers, colour or symbol artwork.
+html = html.replace("</style>", """
+@media (max-width:810px) {
+  #songScreen.song-screen.active{overflow:hidden!important}
+  #songScreen .song-inner{
+    height:100dvh!important;max-height:100dvh!important;
+    display:flex!important;flex-direction:column!important;
+    overflow:hidden!important;
+  }
+  #songScreen .song-top{
+    flex:0 0 auto!important;position:relative!important;top:auto!important;
+  }
+  #songScreen .song-inner>.small-toolbar{
+    flex:0 0 auto!important;
+    display:flex!important;align-items:center!important;justify-content:center!important;
+    gap:12px!important;padding:3px 8px!important;
+    min-height:43px!important;
+    margin:0!important;
+    border-bottom:1px solid var(--border,#ded2bc);
+    background:var(--paper,#faf6ec);
+    z-index:5!important;
+  }
+  #songScreen .song-inner>.small-toolbar button{
+    min-width:48px!important;min-height:37px!important;
+    padding:4px 10px!important;
+  }
+  #songScreen #songBody{
+    flex:1 1 0!important;min-height:0!important;
+    overflow-y:auto!important;overflow-x:hidden!important;
+    overscroll-behavior-y:contain!important;
+    -webkit-overflow-scrolling:touch;
+    touch-action:pan-y;
+  }
+  #songScreen .song-head{padding-top:8px!important}
+  #songScreen .song-number-large{margin:3px 0!important;font-size:12px!important}
+  #songScreen .song-head h2{
+    font-size:clamp(23px,calc(var(--lyric-size,21px)*1.25),34px)!important;
+    margin:4px 0 6px!important;line-height:1.12!important;
+  }
+  #songScreen .ornament{margin:5px 0!important}
+  #songScreen .lyric-area{padding-top:3px!important}
+  #songScreen .stanza{margin-bottom:10px!important}
+}
+</style>""", 1)
+
 # Keep titles larger than the verse text, without changing the imported song.
 html = html.replace("</style>", """
 /* Song heading hierarchy */
