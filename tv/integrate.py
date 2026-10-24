@@ -146,6 +146,68 @@ html = html.replace("</style>", """
 }
 </style>""", 1)
 
+
+# Approved 24 Oct 2026 mockup: remove unused vertical spaces, never change the
+# original light/gold palette, logo, TV/gear icons or the working audio controls.
+# The actual catalogue header contains .hero-top / .hero-note / .search-wrap,
+# and the list controls live in .section-heading / .category-strip / .search-mode.
+html = html.replace("</style>", """
+@media (max-width:810px) {
+  #listScreen>header.hero{
+    padding-top:max(39px,calc(env(safe-area-inset-top) + 9px))!important;
+    padding-bottom:8px!important;
+    margin-bottom:2px!important;
+  }
+  #listScreen>header.hero .hero-content{padding:0 12px 0!important}
+  #listScreen>header.hero .hero-top{margin-bottom:7px!important;gap:8px!important}
+  #listScreen>header.hero .app-logo{
+    width:70px!important;height:70px!important;
+    min-width:70px!important;max-width:70px!important;
+    min-height:70px!important;max-height:70px!important;
+    object-fit:contain!important;
+  }
+  #listScreen>header.hero .app-name{font-size:clamp(22px,5.5vw,29px)!important;line-height:1.06!important}
+  #listScreen>header.hero .tagline{margin:2px 0 0!important;font-size:10px!important}
+  /* The results counter is already next to "Alla sånger". */
+  #listScreen>header.hero .hero-note{display:none!important}
+  #listScreen>header.hero .search-wrap{
+    height:45px!important;min-height:45px!important;margin:0!important;
+    padding-top:0!important;padding-bottom:0!important;
+  }
+  #listScreen>header.hero #search{min-height:43px!important;height:43px!important}
+  #listScreen.active{
+    height:calc(100dvh - 66px - env(safe-area-inset-bottom) - 4px)!important;
+    max-height:calc(100dvh - 66px - env(safe-area-inset-bottom) - 4px)!important;
+  }
+  #listScreen.active>main{padding-top:2px!important}
+  #listScreen.active .section-heading{
+    min-height:0!important;margin:0 0 3px!important;
+    padding:0!important;
+  }
+  #listScreen.active .section-heading h2{
+    font-size:25px!important;line-height:1.15!important;margin:0!important;
+  }
+  #listScreen.active .category-strip{
+    min-height:0!important;padding:1px 0 3px!important;margin:0!important;
+    gap:6px!important;
+  }
+  #listScreen.active .category-strip .chip{
+    min-height:35px!important;padding:5px 10px!important;
+    margin:0!important;font-size:12px!important;
+  }
+  #listScreen.active .search-mode{
+    min-height:0!important;padding:1px 0 3px!important;margin:0!important;
+    gap:5px!important;
+  }
+  #listScreen.active .search-mode .mode{
+    min-height:34px!important;padding:4px 9px!important;
+    margin:0!important;font-size:12px!important;
+  }
+  #listScreen.active #list{padding-top:2px!important;padding-bottom:7px!important;margin-top:0!important}
+  /* Existing symbols and background are untouched. */
+}
+</style>""", 1)
+
 # Keep titles larger than the verse text, without changing the imported song.
 html = html.replace("</style>", """
 /* Song heading hierarchy */
