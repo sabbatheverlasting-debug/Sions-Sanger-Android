@@ -208,6 +208,34 @@ html = html.replace("</style>", """
 }
 </style>""", 1)
 
+
+# In the actual Sions reader .song-screen.active is fixed, but it used to be
+# the scroll container. Keep .song-top in place and make only #songBody scroll.
+# Do not modify the app's text, theme palette, or back/copy/favorite/TV icons.
+html = html.replace("</style>", """
+@media (max-width:810px) and (orientation:portrait) {
+  #songScreen.song-screen.active{
+    overflow:hidden!important;
+    overscroll-behavior:contain;
+  }
+  #songScreen .song-inner{
+    display:flex!important;flex-direction:column!important;
+    height:100dvh!important;min-height:0!important;
+    overflow:hidden!important;box-sizing:border-box;
+  }
+  #songScreen .song-top{
+    position:relative!important;top:auto!important;
+    flex:0 0 auto!important;z-index:3;
+  }
+  #songScreen #songBody{
+    flex:1 1 auto!important;min-height:0!important;
+    overflow-y:auto!important;overflow-x:hidden!important;
+    overscroll-behavior:contain;
+    -webkit-overflow-scrolling:touch;
+  }
+}
+</style>""", 1)
+
 # Keep titles larger than the verse text, without changing the imported song.
 html = html.replace("</style>", """
 /* Song heading hierarchy */
