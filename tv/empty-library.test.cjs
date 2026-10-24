@@ -19,6 +19,30 @@ async function open(imported){
  assert.equal(d.getElementById('allSongsCount').textContent,'1');assert(d.body.textContent.includes(song.title));
  assert.deepEqual(JSON.parse(w.localStorage.getItem('sions-sanger-imports-1')),[song],'An update keeps manual imports, including same-number songs');
  assert.equal(w.localStorage.getItem('sions-app-colour-v1'),'#49345e');
+
+ // Verify that the music button is unobtrusive until explicitly expanded.
+ let audioStatus={number:'1',playing:true,ready:true,position:5,duration:90},stopped=false;
+ w.SionsAndroid={
+  audioList:()=>JSON.stringify({'1':{number:'1',title:'Provsång',file:'1.mp3'}}),
+  audioStatus:()=>JSON.stringify(audioStatus),
+  audioPause:()=>{audioStatus.playing=false},
+  audioPlay:()=>{audioStatus.playing=true},
+  audioStop:()=>{stopped=true;audioStatus={}},
+  audioSeek:()=>{}
+ };
+ w.setInterval=()=>0;
+ w.SionsTvData=()=>({library:[song],activeSong:song,openSong(){}});
+ w.eval(fs.readFileSync('tv/audio-mini-player.js','utf8'));
+ d.dispatchEvent(new w.Event('DOMContentLoaded'));
+ const launch=d.getElementById('sau-mini-launch'),panel=d.getElementById('sau-mini-player');
+ assert(launch&&!launch.hidden&&panel.hidden,'Compact player must be collapsed on opening');
+ launch.click();assert(!panel.hidden,'Corner button should show player on request');
+ assert(d.body.classList.contains('sau-player-expanded'),'Reading content gets bottom clearance');
+ panel.querySelector('.sau-mini-close').click();
+ assert(panel.hidden&&!launch.hidden,'Close should bring back the corner button');
+ launch.click();panel.querySelector('.sau-mini-stop').click();
+ assert(stopped&&panel.hidden,'Stop stops playback and hides the player');
+
  assert.deepEqual(JSON.parse(w.localStorage.getItem('sions-sanger-favorites-1')),['nr:1']);
  d.getElementById('clearImports').click();assert.equal(d.getElementById('allSongsCount').textContent,'0','Clearing imports never restores bundled songs');
  dom.window.close();console.log('PASS: empty installation, no bundled lyrics, retained imports/favourites/colour, clearing imports stays empty');
