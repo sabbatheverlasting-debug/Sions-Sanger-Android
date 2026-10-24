@@ -53,7 +53,7 @@
       '.stv-title-row{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:8px;max-width:100%}.stv-title-row h2{flex:1 0 100%;min-width:0;margin:0 0 6px!important}',
       '#stv-reader-show,#stv-reader-next{flex:0 0 auto;align-self:center;min-height:40px;padding:9px 12px;border:1px solid #c9aa69;border-radius:10px;background:#f5e7c6;color:#17354d;font:600 14px system-ui;white-space:nowrap;cursor:pointer}#stv-reader-next:disabled{opacity:.45;cursor:default}',
       '.stanza[data-tv-tap]{cursor:pointer}.stanza.stv-verse-active{box-shadow:inset 3px 0 #c99846;background-color:rgba(201,152,70,.08)}.stanza[data-tv-tap]:focus-visible{outline:2px solid #c99846;outline-offset:4px}',
-      '#sions-tv-open{position:fixed;right:14px;bottom:95px;z-index:1000;border:0;border-radius:50%;width:53px;height:53px;background:#c99846;color:#102d49;font-weight:800;box-shadow:0 6px 17px #091a2e55;font-size:25px}',
+      '#sions-tv-open{position:fixed;right:78px;top:calc(14px + env(safe-area-inset-top));bottom:auto;z-index:1000;border:1px solid #b9965d;border-radius:12px;width:41px;height:41px;background:#c99846;color:#102d49;font-weight:800;box-shadow:0 2px 8px #091a2e33;font-size:14px}',
       '#sions-tv-shortcut{margin-left:8px;border:1px solid #dcb96a;border-radius:10px;padding:6px 10px;color:#17354d;background:#fae9bd;font-size:15px;font-weight:bold}',
       '#sions-tv-panel{position:fixed;inset:0;z-index:2147483000;overflow-y:auto;overscroll-behavior:contain;background:#0c1c2c;color:#f7f0e2;font:16px system-ui,-apple-system,sans-serif;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}',
       '#sions-tv-panel[hidden],#sions-tv-mirror[hidden]{display:none!important}',
