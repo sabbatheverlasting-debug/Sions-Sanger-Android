@@ -50,6 +50,7 @@ async function open(imported){
  };
  w.setInterval=()=>0;
  w.SionsTvData=()=>({library:[song],activeSong:song,openSong(){}});
+ d.querySelector('.song-row').click(); // Open the actual reader before inspecting its text controls.
  // The old font controls remain functional, but must live OUTSIDE #songBody.
  const sourceTools=d.querySelector('#songBody .small-toolbar');
  assert(sourceTools&&sourceTools.querySelectorAll('button').length===2,'Existing A−/A+ tools remain available');
