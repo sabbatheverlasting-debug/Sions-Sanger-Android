@@ -285,6 +285,92 @@ html = html.replace("</style>", """
 }
 </style>""", 1)
 
+
+# Compact Sions song READER (not the catalogue). Existing TV and music
+# features are now collapsible within a single narrow utility strip.
+# Reading font size and colors are never overridden, only whitespace/leading.
+html = html.replace("</style>", """
+@media(max-width:810px) {
+  #songScreen.song-screen.active{
+    overflow:hidden!important;
+    overscroll-behavior:none!important;
+  }
+  #songScreen .song-inner{
+    display:flex!important;flex-direction:column!important;
+    min-height:0!important;height:100dvh!important;
+    max-height:100dvh!important;overflow:hidden!important;
+  }
+  #songScreen .song-top{
+    flex:0 0 auto!important;
+    margin:0!important;
+    padding:calc(5px + env(safe-area-inset-top)) 8px 5px!important;
+    min-height:45px!important;gap:3px!important;
+    position:relative!important;top:auto!important;
+  }
+  #songScreen .song-top .song-top-label{
+    min-width:0!important;font-size:13px!important;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  }
+  #songScreen .song-top .song-actions{gap:3px!important;flex-wrap:nowrap!important}
+  #songScreen .song-top .small-toolbar{
+    padding:0!important;margin:0!important;
+    background:transparent!important;border:0!important;
+    box-shadow:none!important;min-height:0!important;
+  }
+  #songScreen .song-top .small-toolbar button{
+    width:32px!important;min-width:32px!important;
+    height:35px!important;min-height:35px!important;
+    margin:0!important;padding:2px!important;font-size:14px!important;
+  }
+  #songScreen .song-top .song-action{
+    min-width:35px!important;width:35px!important;
+    height:35px!important;min-height:35px!important;
+    padding:2px!important;
+  }
+  #songScreen #songBody{
+    flex:1 1 0!important;min-height:0!important;
+    overflow-y:auto!important;overscroll-behavior-y:contain!important;
+    -webkit-overflow-scrolling:touch;
+  }
+  #songScreen .song-head{
+    padding:4px 10px 0!important;margin:0!important;
+  }
+  #songScreen .song-number-large{
+    margin:2px 0!important;font-size:12px!important;
+  }
+  #songScreen .song-head h2{
+    margin:3px auto 5px!important;
+    font-size:clamp(24px,calc(var(--lyric-size,21px)*1.25),34px)!important;
+    line-height:1.13!important;
+  }
+  #songScreen .ornament{
+    margin:3px 0!important;line-height:1.1!important;
+  }
+  #songScreen .song-utility-strip{
+    display:flex!important;align-items:flex-start!important;justify-content:center!important;
+    gap:5px!important;margin:2px 0 5px!important;padding:0 5px!important;
+  }
+  #songScreen .lyric-area{
+    margin-top:0!important;padding:3px 12px 12px!important;
+  }
+  #songScreen .stanza{
+    margin:0 0 10px!important;
+    padding-top:0!important;padding-bottom:0!important;
+  }
+  #songScreen .stanza-text,#songScreen .verse-line{
+    line-height:1.43!important;
+  }
+  #songScreen .song-category,
+  #songScreen .song-meta,
+  #songScreen .song-head .subtitle,
+  #songScreen .song-head p{
+    margin:2px auto 5px!important;
+    line-height:1.2!important;
+    font-size:12px!important;
+  }
+}
+</style>""", 1)
+
 # Keep titles larger than the verse text, without changing the imported song.
 html = html.replace("</style>", """
 /* Song heading hierarchy */
