@@ -13,6 +13,19 @@ async function open(imported){
  let dom=await open(),w=dom.window,d=w.document;
  assert.equal(JSON.parse(d.getElementById('initialSongs').textContent).songs.length,0,'No bundled text in the installed assets');
  assert.equal(d.getElementById('allSongsCount').textContent,'0');assert.equal(d.querySelectorAll('.song-row').length,0);
+
+ function hier(node){var out=[];while(node&&out.length<5){out.push({tag:node.tagName,id:node.id||'',cl:String(node.className||'').slice(0,110)});node=node.parentElement;}return out;}
+ function stripped(el){if(!el)return '';var x=el.cloneNode(true);x.querySelectorAll('img,svg').forEach(n=>n.replaceWith('[image]'));return x.outerHTML.slice(0,4500);}
+ console.log('LAYOUT_INSPECT',JSON.stringify({
+  top:stripped(d.querySelector('#listScreen>header.hero')),
+  main:stripped(d.querySelector('#listScreen>main')),
+  songScreen:[...d.querySelectorAll('.screen')].map(s=>({id:s.id,html:stripped(s).slice(0,1200)})),
+  list:hier(d.getElementById('list')),
+  songBody:hier(d.getElementById('songBody')),
+  songTop:hier(d.querySelector('.song-top')),
+  nav:stripped(d.querySelector('.bottom-nav'))
+ }));
+
  assert(d.body.textContent.includes('Biblioteket är tomt'));dom.window.close();
  assert.match(html,/Compact library chrome/,'The compact catalogue style reaches the APK');
  assert.match(html,/padding-top:max\(58px/,'Status-bar and camera safe area remains intact');
