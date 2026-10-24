@@ -14,36 +14,28 @@ async function open(imported){
  assert.equal(JSON.parse(d.getElementById('initialSongs').textContent).songs.length,0,'No bundled text in the installed assets');
  assert.equal(d.getElementById('allSongsCount').textContent,'0');assert.equal(d.querySelectorAll('.song-row').length,0);
 
- function hier(node){var out=[];while(node&&out.length<5){out.push({tag:node.tagName,id:node.id||'',cl:String(node.className||'').slice(0,110)});node=node.parentElement;}return out;}
- function stripped(el){if(!el)return '';var x=el.cloneNode(true);x.querySelectorAll('img,svg').forEach(n=>n.replaceWith('[image]'));return x.outerHTML.slice(0,4500);}
- console.log('LAYOUT_INSPECT',JSON.stringify({
-  top:stripped(d.querySelector('#listScreen>header.hero')),
-  main:stripped(d.querySelector('#listScreen>main')),
-  songScreen:[...d.querySelectorAll('.screen')].map(s=>({id:s.id,html:stripped(s).slice(0,1200)})),
-  list:hier(d.getElementById('list')),
-  songBody:hier(d.getElementById('songBody')),
-  songTop:hier(d.querySelector('.song-top')),
-  nav:stripped(d.querySelector('.bottom-nav'))
- }));
 
  assert(d.body.textContent.includes('Biblioteket är tomt'));dom.window.close();
  assert.match(html,/Compact library chrome/,'The compact catalogue style reaches the APK');
  assert.match(html,/padding-top:max\(58px/,'Status-bar and camera safe area remains intact');
  assert.match(html,/height:calc\(66px \+ env\(safe-area-inset-bottom\)\)/,'Footer is compact and safe-area aware');
  assert.match(html,/min-height:49px!important/,'Footer buttons keep comfortable touch targets');
+
+ assert.match(html,/#listScreen>header\.hero \.hero-note\{display:none!important\}/,
+   'Approved design removes duplicate subtitle/count row without changing branding');
+ assert.match(html,/height:calc\(100dvh - 66px - env\(safe-area-inset-bottom\) - 4px\)/,
+   'The hymn list fills the previously unused band above the footer');
+ assert.match(html,/#songScreen\.song-screen\.active\{\s*overflow:hidden!important/,
+   'Reader screen stops scrolling the upper toolbar');
+ assert.match(html,/#songScreen #songBody\{[\s\S]*?overflow-y:auto!important/,
+   'Only hymn contents scroll independently of the reader toolbar');
+
  const song={song_number:1,title:'Egen testsång',category:null,authors:[],sections:[{type:'verse',number:1,lines:['Min egen provrad.']}]};
  dom=await open([song]);w=dom.window;d=w.document;
  assert.equal(d.getElementById('allSongsCount').textContent,'1');assert(d.body.textContent.includes(song.title));
 
 
 
- const reader=d.getElementById('songScreen');
- console.log('READER_INSPECT',JSON.stringify({
-  cls:reader.className,hidden:reader.hidden,style:reader.getAttribute('style'),
-  children:[...reader.children].map(n=>({tag:n.tagName,cls:n.className,id:n.id})),
-  songInner:d.querySelector('.song-inner')?.outerHTML.slice(0,2200).replace(/<svg[\s\S]*?<\/svg>/g,'[icon]'),
-  styles:[...d.styleSheets].flatMap(sheet=>{try{return [...sheet.cssRules].filter(r=>/song-screen|song-inner|song-top|songBody|bottom-nav|hero-note|category-strip|search-mode/.test(r.selectorText||'')).slice(0,55).map(r=>(r.selectorText||'')+' '+r.cssText.slice(0,400));}catch(e){return [];}}).slice(0,45)
- }));
  assert.deepEqual(JSON.parse(w.localStorage.getItem('sions-sanger-imports-1')),[song],'An update keeps manual imports, including same-number songs');
  assert.equal(w.localStorage.getItem('sions-app-colour-v1'),'#49345e');
 
