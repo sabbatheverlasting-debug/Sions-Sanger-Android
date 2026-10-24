@@ -34,6 +34,13 @@ async function open(imported){
  dom=await open([song]);w=dom.window;d=w.document;
  assert.equal(d.getElementById('allSongsCount').textContent,'1');assert(d.body.textContent.includes(song.title));
 
+ const row=d.querySelector('.song-row');if(row)row.click();
+ console.log('FONT_LAYOUT_DEBUG',JSON.stringify({
+  songScreen:d.getElementById('songScreen')?.outerHTML.slice(0,12000),
+  candidates:[...d.querySelectorAll('button,input[type=range]')].filter(n=>/font|size|text|storlek|A\+|A−|A-|öka|minska/i.test([n.id,n.className,n.textContent,n.title,n.getAttribute('aria-label')].join(' '))).slice(0,50).map(n=>({tag:n.tagName,id:n.id,cl:n.className,label:n.getAttribute('aria-label'),text:n.textContent.slice(0,80),parent:n.parentElement?.outerHTML.slice(0,900)}))
+ }));
+
+
 
 
  assert.deepEqual(JSON.parse(w.localStorage.getItem('sions-sanger-imports-1')),[song],'An update keeps manual imports, including same-number songs');
