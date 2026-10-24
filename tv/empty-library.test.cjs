@@ -14,6 +14,10 @@ async function open(imported){
  assert.equal(JSON.parse(d.getElementById('initialSongs').textContent).songs.length,0,'No bundled text in the installed assets');
  assert.equal(d.getElementById('allSongsCount').textContent,'0');assert.equal(d.querySelectorAll('.song-row').length,0);
  assert(d.body.textContent.includes('Biblioteket är tomt'));dom.window.close();
+ assert.match(html,/Compact library chrome/,'The compact catalogue style reaches the APK');
+ assert.match(html,/padding-top:max\(58px/,'Status-bar and camera safe area remains intact');
+ assert.match(html,/height:calc\(66px \+ env\(safe-area-inset-bottom\)\)/,'Footer is compact and safe-area aware');
+ assert.match(html,/min-height:49px!important/,'Footer buttons keep comfortable touch targets');
  const song={song_number:1,title:'Egen testsång',category:null,authors:[],sections:[{type:'verse',number:1,lines:['Min egen provrad.']}]};
  dom=await open([song]);w=dom.window;d=w.document;
  assert.equal(d.getElementById('allSongsCount').textContent,'1');assert(d.body.textContent.includes(song.title));
