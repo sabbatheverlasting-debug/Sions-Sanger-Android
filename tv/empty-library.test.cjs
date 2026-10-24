@@ -18,14 +18,6 @@ async function open(imported){
  dom=await open([song]);w=dom.window;d=w.document;
  assert.equal(d.getElementById('allSongsCount').textContent,'1');assert(d.body.textContent.includes(song.title));
 
- const songRow=d.querySelector('.song-row');
- console.log('SIONS_LAYOUT_INSPECTION',JSON.stringify({
-  rowParents:(function(){let v=songRow,out=[];for(let i=0;i<6&&v;i++,v=v.parentElement)out.push({tag:v.tagName,id:v.id,cls:v.className});return out;})(),
-  screens:[...d.querySelectorAll('.screen')].map(x=>({id:x.id,cls:x.className,children:[...x.children].map(c=>({tag:c.tagName,id:c.id,cls:c.className})).slice(0,12)})),
-  nav:[...d.querySelectorAll('.bottom-nav')].map(x=>({id:x.id,cls:x.className,parentId:x.parentElement?.id,parentClass:x.parentElement?.className})),
-  headings:[...d.querySelectorAll('header')].map(x=>({id:x.id,cls:x.className,parentId:x.parentElement?.id})),
-  appRoot:d.body.children[0]?.outerHTML.slice(0,900)
- }));
 
  assert.deepEqual(JSON.parse(w.localStorage.getItem('sions-sanger-imports-1')),[song],'An update keeps manual imports, including same-number songs');
  assert.equal(w.localStorage.getItem('sions-app-colour-v1'),'#49345e');
