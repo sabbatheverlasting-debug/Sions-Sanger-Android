@@ -67,6 +67,10 @@ html = html.replace("</style>", """
     display:flex;flex-direction:column;flex:1 1 auto;
     min-height:0;overflow:hidden;
   }
+  #listScreen.active>main>:not(#list){
+    flex:0 0 auto;min-height:max-content;
+    position:relative;z-index:1;
+  }
   #listScreen.active #list{
     flex:1 1 auto;min-height:0;overflow-y:auto;
     overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
