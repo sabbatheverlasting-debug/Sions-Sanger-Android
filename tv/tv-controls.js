@@ -51,6 +51,19 @@
     var css = document.createElement('style');
     css.textContent = [
       '.stv-title-row{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:8px;max-width:100%}.stv-title-row h2{flex:1 0 100%;min-width:0;margin:0 0 6px!important}',
+      '.song-utility-strip{display:flex;align-items:flex-start;justify-content:center;flex-wrap:wrap;gap:5px;margin:2px 0 4px;padding:0 8px}',
+      '.song-utility-strip>details{flex:0 0 auto;max-width:100%;margin:0;border:0}',
+      '.song-utility-strip>details>summary{list-style:none;cursor:pointer;min-height:34px;padding:6px 11px;border:1px solid #d4b773;border-radius:9px;background:#f6ead1;color:#283a4c;font:600 12px system-ui}',
+      '.song-utility-strip>details>summary::-webkit-details-marker{display:none}',
+      '.song-utility-strip>details[open]{flex:1 1 100%}',
+      '.stv-reader-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:5px;margin:5px 0}',
+      '.stv-reader-actions button{min-height:34px!important;padding:5px 9px!important;margin:0!important;font-size:12px!important}',
+      '#songScreen .song-top .song-actions{display:flex;align-items:center;gap:3px;min-width:0}',
+      '#songScreen .song-top .small-toolbar{display:flex;align-items:center;gap:2px;flex:0 0 auto;margin:0!important;padding:0!important;border:0;background:transparent}',
+      '#songScreen .song-top .small-toolbar button{min-height:35px!important;min-width:32px!important;height:35px!important;padding:2px!important;font-size:13px!important;margin:0!important}',
+      '#songScreen .song-top #sions-tv-shortcut{min-height:35px;padding:4px 6px!important;font-size:13px!important;margin:0 2px!important}',
+      '#songScreen .song-top .song-top-label{min-width:0;flex:1 1 auto;overflow:hidden;text-overflow:ellipsis}',
+
       '#stv-reader-show,#stv-reader-next{flex:0 0 auto;align-self:center;min-height:40px;padding:9px 12px;border:1px solid #c9aa69;border-radius:10px;background:#f5e7c6;color:#17354d;font:600 14px system-ui;white-space:nowrap;cursor:pointer}#stv-reader-next:disabled{opacity:.45;cursor:default}',
       '.stanza[data-tv-tap]{cursor:pointer}.stanza.stv-verse-active{box-shadow:inset 3px 0 #c99846;background-color:rgba(201,152,70,.08)}.stanza[data-tv-tap]:focus-visible{outline:2px solid #c99846;outline-offset:4px}',
       '#sions-tv-open{position:fixed;right:78px;top:calc(14px + env(safe-area-inset-top));bottom:auto;z-index:1000;border:1px solid #b9965d;border-radius:12px;width:41px;height:41px;background:#c99846;color:#102d49;font-weight:800;box-shadow:0 2px 8px #091a2e33;font-size:14px}',
@@ -306,9 +319,8 @@
       if(readerRoot&&newest){
         var older=readerRoot.querySelector(':scope > .small-toolbar');
         if(older&&older!==newest)older.remove();
-        var fixedHeader=readerRoot.querySelector(':scope > .song-top');
-        if(fixedHeader&&newest.previousElementSibling!==fixedHeader)
-          fixedHeader.insertAdjacentElement('afterend',newest);
+        var actions=readerRoot.querySelector('.song-top .song-actions');
+        if(actions&&newest.parentElement!==actions)actions.prepend(newest);
       }
       if (!song || !body) return;
       var stanzas = body.querySelectorAll('.stanza');
@@ -337,11 +349,17 @@
         stanza.setAttribute('aria-pressed', shown ? 'true' : 'false');
       });
       var title = body.querySelector('.song-head h2');
-      if (title && !$('stv-reader-next')) {
+      // The title remains in the song heading. TV tools collapse into ONE
+      // compact strip alongside optional audio tools, above the lyrics.
+      var head=body.querySelector('.song-head');
+      var strip=body.querySelector('#song-utility-strip');
+      if(head&&!strip){strip=document.createElement('div');strip.id='song-utility-strip';strip.className='song-utility-strip';head.insertAdjacentElement('afterend',strip);}
+      if (title && strip && !strip.querySelector('#stv-reader-next')) {
+        var details=document.createElement('details');details.className='stv-reader-tools';details.id='stv-reader-tools';
+        var summary=document.createElement('summary');summary.textContent='▣ TV-styrning';details.appendChild(summary);
         var row = document.createElement('div');
-        row.className = 'stv-title-row';
-        title.parentNode.insertBefore(row, title);
-        row.appendChild(title);
+        row.className = 'stv-reader-actions';details.appendChild(row);
+        strip.appendChild(details);
         var show = document.createElement('button');
         show.type = 'button'; show.id = 'stv-reader-show'; show.textContent = 'Visa på TV';
         show.onclick = function() {
