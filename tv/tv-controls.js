@@ -72,6 +72,8 @@
       '#sions-tv-panel[hidden],#sions-tv-mirror[hidden]{display:none!important}',
       /* Only ONE TV shortcut inside an open hymn. The floating catalogue TV button must disappear. */
       'body:has(#songScreen.active) #sions-tv-open{display:none!important}',
+      '#sions-tv-open[hidden]{display:none!important}',
+      '#sions-tv-shortcut[hidden]{display:none!important}',
       '.stv-inner{max-width:680px;margin:auto;padding:20px 18px 70px}',
       '.stv-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}.stv-heading h1{font:normal 27px Georgia,serif;color:#f2ce83;margin:0}',
       '.stv-card{background:#172f45;border:1px solid #355069;border-radius:18px;padding:18px;margin:17px 0;box-shadow:0 3px 8px #0002}',
@@ -138,7 +140,10 @@
       var song=document.getElementById('songScreen');
       var reading=!!(song&&song.classList.contains('active'));
       open.hidden=reading;
+      open.style.setProperty('display',reading?'none':'','important');
+      open.setAttribute('aria-hidden',String(reading));
       shortcut.hidden=!reading;
+      shortcut.style.display=reading?'':'none';
     }
     var reader=document.getElementById('songScreen');
     if(reader)new MutationObserver(updateTvShortcutVisibility).observe(reader,{attributes:true,attributeFilter:['class','style']});
@@ -348,34 +353,14 @@
         stanza.classList.toggle('stv-verse-active', shown);
         stanza.setAttribute('aria-pressed', shown ? 'true' : 'false');
       });
-      var title = body.querySelector('.song-head h2');
-      // The title remains in the song heading. TV tools collapse into ONE
-      // compact strip alongside optional audio tools, above the lyrics.
+      // One TV entry in the fixed top bar opens ALL TV functionality (including
+      // choosing a hymn, previous/next verse and disconnect). Tapping a stanza
+      // still sends it directly. Remove redundant in-song TV menu.
       var head=body.querySelector('.song-head');
       var strip=body.querySelector('#song-utility-strip');
       if(head&&!strip){strip=document.createElement('div');strip.id='song-utility-strip';strip.className='song-utility-strip';head.insertAdjacentElement('afterend',strip);}
-      if (title && strip && !strip.querySelector('#stv-reader-next')) {
-        var details=document.createElement('details');details.className='stv-reader-tools';details.id='stv-reader-tools';
-        var summary=document.createElement('summary');summary.textContent='▣ TV-styrning';details.appendChild(summary);
-        var row = document.createElement('div');
-        row.className = 'stv-reader-actions';details.appendChild(row);
-        strip.appendChild(details);
-        var show = document.createElement('button');
-        show.type = 'button'; show.id = 'stv-reader-show'; show.textContent = 'Visa på TV';
-        show.onclick = function() {
-          var active = selected && key(selected) === key(song);
-          showVerse(active ? at : 0);
-        };
-        row.appendChild(show);
-        var button = document.createElement('button');
-        button.type = 'button'; button.id = 'stv-reader-next';
-        button.textContent = 'Nästa vers ›';
-        button.onclick = function() { window.sionsTvNextVerse(1); };
-        row.appendChild(button);
-        var end=document.createElement('button');end.type='button';end.className='stv-btn secondary';end.textContent='Avsluta TV';end.onclick=endTv;row.appendChild(end);
-      }
-      var nextButton = $('stv-reader-next');
-      if (nextButton) nextButton.disabled = !!selected && key(selected) === key(song) && at >= song.sections.length - 1;
+      var extra=body.querySelector('#stv-reader-tools');
+      if(extra)extra.remove();
     }
     var songBody = document.getElementById('songBody');
     if (songBody) new MutationObserver(function() { decorateReader(); }).observe(songBody, {childList:true,subtree:true});
