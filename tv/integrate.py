@@ -51,6 +51,30 @@ html = replace_once(html,
     "config.size=Math.max(15,Math.min(35,config.size+n));saveConfig()",
     "config.size=Math.max(15,Math.min(35,config.size+n));saveConfig();window.dispatchEvent(new Event('sions-font-change'))",
     "index.html")
+# In catalogue mode only the list of songs scrolls. The existing header,
+# search/categories, phone camera/status inset, and bottom navigation stay put.
+# The reader/TV screens keep their original scrolling and presentation layout.
+html = html.replace("</style>", """
+@media (orientation:portrait) and (min-height:620px) {
+  #listScreen.active{
+    display:flex;flex-direction:column;min-height:0;
+    height:calc(100dvh - var(--sau-nav-height,82px) - 50px);
+    max-height:calc(100dvh - var(--sau-nav-height,82px) - 50px);
+    overflow:hidden;
+  }
+  #listScreen.active>header.hero{flex:0 0 auto}
+  #listScreen.active>main{
+    display:flex;flex-direction:column;flex:1 1 auto;
+    min-height:0;overflow:hidden;
+  }
+  #listScreen.active #list{
+    flex:1 1 auto;min-height:0;overflow-y:auto;
+    overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
+    padding-bottom:12px;
+  }
+}
+</style>""", 1)
+
 # Keep titles larger than the verse text, without changing the imported song.
 html = html.replace("</style>", """
 /* Song heading hierarchy */
