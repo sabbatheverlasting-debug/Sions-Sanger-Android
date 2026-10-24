@@ -36,8 +36,12 @@ async function open(imported){
  d.dispatchEvent(new w.Event('DOMContentLoaded'));
  const launch=d.getElementById('sau-mini-launch'),panel=d.getElementById('sau-mini-player');
  assert(launch&&!launch.hidden&&panel.hidden,'Compact player must be collapsed on opening');
+ assert(launch.parentElement.classList.contains('sau-mini-host'),'Corner music button must be in a full-width dock, never float over hymn text');
+ assert(panel.parentElement===launch.parentElement,'Expanded player must stay inside the same bottom shelf');
+ assert(d.body.classList.contains('sau-standalone-dock'),'Sions must reserve reading space for the footer');
  launch.click();assert(!panel.hidden,'Corner button should show player on request');
- assert(d.body.classList.contains('sau-player-expanded'),'Reading content gets bottom clearance');
+ assert(d.body.classList.contains('sau-player-expanded'),'Bottom shelf expands and reserves text space');
+ assert(launch.parentElement.classList.contains('sau-expanded'),'The dock expands in the footer, not in the reading text');
  panel.querySelector('.sau-mini-close').click();
  assert(panel.hidden&&!launch.hidden,'Close should bring back the corner button');
  launch.click();panel.querySelector('.sau-mini-stop').click();
