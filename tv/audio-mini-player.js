@@ -7,23 +7,40 @@
   if(!native||typeof native.audioStatus!=='function'||typeof native.audioList!=='function'||document.getElementById('sau-mini-player'))return;
   var css=document.createElement('style');
   css.textContent=[
-   '.sau-mini-launch,.sau-mini-player{box-sizing:border-box;position:fixed;z-index:1550;font-family:system-ui,-apple-system,sans-serif;color:#f8f2e8}',
-   '.sau-mini-launch{right:12px;bottom:var(--sau-bottom-offset,86px);width:44px;height:44px;display:grid;place-items:center;border:1px solid #cfb27d;border-radius:50%;background:#102d46;color:#fff1c8;box-shadow:0 3px 15px #0006;font-size:22px;cursor:pointer}',
-   '.sau-mini-launch[data-playing="true"]::after{content:"";position:absolute;top:5px;right:5px;width:8px;height:8px;border-radius:50%;background:#7cdd9d;border:1px solid #102d46}',
-   '.sau-mini-launch[hidden],.sau-mini-player[hidden]{display:none!important}',
-   '.sau-mini-player{left:50%;transform:translateX(-50%);bottom:var(--sau-bottom-offset,86px);width:min(calc(100% - 18px),520px);padding:6px 9px 5px;background:#102d46;border:1px solid #cfb27d;border-radius:13px;box-shadow:0 -4px 18px #0007}',
-   '.sau-mini-row{display:flex;align-items:center;gap:6px;min-height:38px}',
-   '.sau-mini-title{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left;border:0;background:transparent;color:#fff1c8;font:600 13px system-ui;min-height:36px;padding:5px 3px}',
-   '.sau-mini-player button.sau-mini-control{flex:none;min-width:38px;min-height:38px;padding:4px;border:0;border-radius:8px;background:#f1d89e;color:#16364d;font:bold 18px system-ui;cursor:pointer}',
-   '.sau-mini-player button.sau-mini-stop{background:#244f6f;color:white;border:1px solid #b59a68}',
-   '.sau-mini-player button.sau-mini-close{background:transparent;color:#f4e6c7;font-size:23px;border:1px solid #65829a}',
-   '.sau-mini-player button:disabled{opacity:.45;cursor:default}',
-   '.sau-mini-progress{display:flex;align-items:center;gap:7px;min-height:22px}',
-   '.sau-mini-progress input[type=range]{flex:1;min-width:0;width:auto;height:16px;margin:0;accent-color:#e2bd7e}',
-   '.sau-mini-time{white-space:nowrap;color:#e8dcc5;text-align:right;font:10px system-ui;min-width:76px;font-variant-numeric:tabular-nums}',
-   '.sau-mini-launch:focus-visible,.sau-mini-player button:focus-visible,.sau-mini-progress input:focus-visible{outline:3px solid white;outline-offset:2px}',
-   'body.sau-player-expanded .app-shell{padding-bottom:calc(var(--sau-bottom-offset,86px) + var(--sau-panel-height,75px) + 18px)!important}',
-   '@media(max-width:360px){.sau-mini-player{padding:5px 7px}.sau-mini-title{font-size:12px}.sau-mini-row{gap:4px}}'
+   '.sau-mini-launch,.sau-mini-player,.sau-mini-host{box-sizing:border-box;font-family:system-ui,-apple-system,sans-serif}',
+   '#sau-mini-launch{position:static!important;flex:0 0 42px!important;width:42px!important;max-width:42px!important;height:42px!important;min-height:42px!important;display:grid!important;place-items:center!important;padding:0!important;margin:0!important;border:1px solid #c9aa77!important;border-radius:12px!important;background:#163850!important;color:#ffe4ab!important;box-shadow:none!important;font-size:22px!important;line-height:1!important;cursor:pointer}',
+   '#sau-mini-launch[data-playing="true"]::after{content:"";position:absolute;right:2px;top:3px;background:#67cf8b;width:7px;height:7px;border-radius:50%;border:1px solid #102d46}',
+   '#sau-mini-launch{position:relative!important}',
+   '#sau-mini-launch[hidden],#sau-mini-player[hidden]{display:none!important}',
+   '#sau-mini-player{position:static!important;flex:1 1 auto;transform:none!important;left:auto!important;bottom:auto!important;width:100%!important;max-width:none!important;min-width:0;color:#f8f2e8;background:#102d46;border:1px solid #68839b;border-radius:12px;box-shadow:none;padding:4px 7px 3px;font:13px system-ui}',
+   '.sau-mini-row{display:flex;align-items:center;gap:5px;min-height:34px}',
+   '.sau-mini-title{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left;border:0;background:transparent;color:#fff1c8;font:600 12px system-ui;min-height:34px;padding:4px 2px}',
+   '#sau-mini-player button.sau-mini-control{flex:0 0 36px;min-width:36px;min-height:36px;max-width:36px;padding:2px;border:0;border-radius:7px;background:#eaca8d;color:#16364d;font:bold 17px system-ui;cursor:pointer}',
+   '#sau-mini-player button.sau-mini-stop{background:#244f6f;color:white;border:1px solid #b59a68}',
+   '#sau-mini-player button.sau-mini-close{background:transparent;color:#f4e6c7;font-size:22px;border:1px solid #65829a}',
+   '#sau-mini-player button:disabled{opacity:.5;cursor:default}',
+   '.sau-mini-progress{display:flex;align-items:center;gap:6px;min-height:18px}',
+   '.sau-mini-progress input[type=range]{flex:1;min-width:0;width:100%;height:14px;margin:0;accent-color:#e2bd7e}',
+   '.sau-mini-time{white-space:nowrap;color:#e8dcc5;text-align:right;font:10px system-ui;min-width:73px;font-variant-numeric:tabular-nums}',
+   '#sau-mini-launch:focus-visible,#sau-mini-player button:focus-visible,.sau-mini-progress input:focus-visible{outline:3px solid white;outline-offset:2px}',
+   /* On 3 Angels the player REPLACES the bottom navigation while open;
+      neither control is positioned over the hymn reading area. */
+   '.bottom-nav.sau-nav-expanded>button:not(#sau-mini-launch){display:none!important}',
+   '.bottom-nav #sau-mini-player{flex:1 1 100%;max-width:none!important}',
+   '.bottom-nav.sau-nav-expanded{min-height:73px}',
+   /* Sions has no bottom navigation in the hymn reader: create an opaque
+      dock shelf at the viewport bottom instead of floating music or TV circles. */
+   '.sau-mini-host{position:fixed;z-index:1550;bottom:0;left:0;right:0;display:flex;align-items:center;justify-content:flex-end;gap:10px;min-height:calc(56px + env(safe-area-inset-bottom));padding:5px 12px calc(5px + env(safe-area-inset-bottom));background:var(--paper,#faf6ed);border-top:1px solid #cbbd9f;box-shadow:0 -2px 10px #0000000d}',
+   '.sau-mini-host.sau-expanded{min-height:calc(85px + env(safe-area-inset-bottom));padding:5px 9px calc(5px + env(safe-area-inset-bottom))}',
+   '.sau-mini-host #sau-mini-player{flex:1 1 auto;min-width:0}',
+   '#sions-tv-open.sau-tv-docked{display:grid!important;place-items:center!important;position:relative!important;inset:auto!important;bottom:auto!important;right:auto!important;flex:0 0 42px!important;width:42px!important;height:42px!important;min-height:42px!important;margin:0!important;border-radius:12px!important;box-shadow:none!important;font:700 14px system-ui!important}',
+   '.sau-mini-host.sau-expanded #sions-tv-open.sau-tv-docked{display:none!important}',
+   'body.sau-standalone-dock{padding-bottom:calc(var(--sau-dock-height,56px) + 24px)!important}',
+   'body.sau-standalone-dock #songBody{padding-bottom:calc(var(--sau-dock-height,56px) + 18px)!important}',
+   /* Playback and seek move to the dock; retain the expandable music choices. */
+   'body.sau-audio-docked #sau-controls>#sau-play,body.sau-audio-docked #sau-controls>#sau-seek,body.sau-audio-docked #sau-controls>#sau-info{display:none!important}',
+   'body.sau-audio-docked #sau-controls{padding-top:2px;padding-bottom:4px}',
+   '@media(max-width:360px){#sau-mini-player{padding:3px 5px}.sau-mini-title{font-size:11px}.sau-mini-row{gap:3px}}'
   ].join('\n');
   document.head.appendChild(css);
   var launch=document.createElement('button');
@@ -42,9 +59,20 @@
   var progress=document.createElement('div');progress.className='sau-mini-progress';
   var slider=document.createElement('input');slider.type='range';slider.min='0';slider.max='1';slider.step='0.1';slider.value='0';slider.setAttribute('aria-label','Spola i inspelningen');
   var time=document.createElement('span');time.className='sau-mini-time';time.textContent='0:00 / 0:00';
-  progress.append(slider,time);bar.append(row,progress);document.body.append(launch,bar);
-
-  var expanded=false,status={},library={},selected=null,lastList='',originalBodyPadding=document.body.style.paddingBottom;
+  progress.append(slider,time);bar.append(row,progress);
+  var nav=document.querySelector('.bottom-nav');
+  var host=null,originalBodyPadding=document.body.style.paddingBottom;
+  if(nav){nav.append(launch,bar);}
+  else{
+   host=document.createElement('div');host.className='sau-mini-host';
+   host.setAttribute('aria-label','TV och musik');document.body.appendChild(host);
+   var tv=document.getElementById('sions-tv-open');
+   if(tv){tv.classList.add('sau-tv-docked');host.appendChild(tv);}
+   host.append(launch,bar);
+   document.body.classList.add('sau-standalone-dock');
+  }
+  document.body.classList.add('sau-audio-docked');
+  var expanded=false,status={},library={},selected=null,lastList='';
   function data(){return window.SionsTvData?window.SionsTvData():{};}
   function safeJSON(raw){try{return JSON.parse(raw||'{}');}catch(e){return {};}}
   function clock(s){s=Math.max(0,Math.floor(Number(s)||0));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0');}
@@ -52,26 +80,19 @@
    var songs=data().library||[];
    return songs.find(function(song){return String(song.audio_key||song.song_number)===key;})||null;
   }
-  function reposition(){
-   var nav=document.querySelector('.bottom-nav');
-   var rect=nav&&nav.getBoundingClientRect();
-   var clearance=rect&&rect.height>0&&rect.top<window.innerHeight?Math.ceil(window.innerHeight-rect.top)+6:10;
-   clearance=Math.max(10,clearance);
-   document.documentElement.style.setProperty('--sau-bottom-offset',clearance+'px');
-   if(!bar.hidden){
-    var height=Math.max(65,Math.ceil(bar.getBoundingClientRect().height));
-    document.documentElement.style.setProperty('--sau-panel-height',height+'px');
-    if(!document.querySelector('.app-shell'))document.body.style.paddingBottom=Math.max(0,clearance+height+18)+'px';
-   }else if(!document.querySelector('.app-shell'))document.body.style.paddingBottom=originalBodyPadding;
-  }
   function render(){
-   var tv=document.getElementById('tvMirrorOverlay'),modal=document.getElementById('sau-catalog');
-   var blocked=!!((tv&&!tv.hidden)||(modal&&!modal.hidden));
-   launch.hidden=blocked||expanded;
-   bar.hidden=blocked||!expanded;
+   var overlays=['tvMirrorOverlay','sions-tv-mirror','sions-tv-panel','sau-catalog'];
+   var blocked=overlays.some(function(id){var el=document.getElementById(id);return !!(el&&!el.hidden&&getComputedStyle(el).display!=='none');});
+   var on=expanded&&!blocked;
+   launch.hidden=expanded||blocked;
+   bar.hidden=!on;
    launch.setAttribute('aria-expanded',String(expanded));
-   document.body.classList.toggle('sau-player-expanded',!bar.hidden);
-   reposition();
+   document.body.classList.toggle('sau-player-expanded',on);
+   if(nav)nav.classList.toggle('sau-nav-expanded',on);
+   if(host){
+    host.classList.toggle('sau-expanded',on);
+    document.documentElement.style.setProperty('--sau-dock-height',(on?85:56)+'px');
+   }
   }
   launch.onclick=function(){expanded=true;render();close.focus();};
   close.onclick=function(){expanded=false;render();launch.focus();};
@@ -112,7 +133,6 @@
    open:function(){expanded=true;update();},
    close:function(){expanded=false;update();}
   };
-  window.addEventListener('resize',reposition);
   update();
   setInterval(update,750);
  }
