@@ -87,6 +87,65 @@ html = html.replace("</style>", """
 }
 </style>""", 1)
 
+
+# Compact the library header and navigation without touching the reader,
+# music-bar controls, TV panel or the protected status/camera strip.
+html = html.replace("</style>", """
+/* Compact library chrome; Android status bar/camera clearance is unchanged. */
+@media (max-width:810px) {
+  #listScreen > header.hero{
+    padding-bottom:12px!important;
+    margin-bottom:5px!important;
+    min-height:0!important;
+  }
+  #listScreen > header.hero .hero-content{
+    padding-bottom:8px!important;
+  }
+  #listScreen > header.hero .hero-top{
+    gap:9px!important;
+    align-items:center!important;
+    margin-bottom:4px!important;
+  }
+  #listScreen > header.hero .app-logo{
+    width:88px!important;
+    height:88px!important;
+    max-width:88px!important;
+    max-height:88px!important;
+    object-fit:contain!important;
+  }
+  #listScreen > header.hero h1{
+    font-size:clamp(25px,5.6vw,31px)!important;
+    line-height:1.1!important;
+    margin-bottom:2px!important;
+  }
+  #listScreen > header.hero input[type=search]{
+    min-height:46px!important;
+    height:46px!important;
+  }
+  #listScreen > header.hero .search-box,
+  #listScreen > header.hero .search-wrap,
+  #listScreen > header.hero .search-control{
+    min-height:48px!important;
+  }
+  .bottom-nav{
+    height:calc(66px + env(safe-area-inset-bottom))!important;
+    min-height:0!important;
+    padding:4px 7px calc(4px + env(safe-area-inset-bottom))!important;
+    align-items:center!important;
+  }
+  .bottom-nav .nav-btn{
+    min-height:49px!important;
+    padding:3px 5px!important;
+    gap:2px!important;
+    font-size:12px!important;
+  }
+  .bottom-nav .nav-btn svg{
+    max-width:23px!important;
+    max-height:23px!important;
+  }
+}
+</style>""", 1)
+
 # Keep titles larger than the verse text, without changing the imported song.
 html = html.replace("</style>", """
 /* Song heading hierarchy */
