@@ -298,6 +298,18 @@
     };
     function decorateReader() {
       var song = data().activeSong, body = document.getElementById('songBody');
+      // Move the EXISTING, working A−/A+ controls outside the scrolling lyrics.
+      // Moving DOM elements preserves their listeners and stored text-size value.
+      // A new song may recreate these buttons: always keep only the latest pair.
+      var readerRoot=document.querySelector('#songScreen .song-inner');
+      var newest=body&&body.querySelector('.small-toolbar');
+      if(readerRoot&&newest){
+        var older=readerRoot.querySelector(':scope > .small-toolbar');
+        if(older&&older!==newest)older.remove();
+        var fixedHeader=readerRoot.querySelector(':scope > .song-top');
+        if(fixedHeader&&newest.previousElementSibling!==fixedHeader)
+          fixedHeader.insertAdjacentElement('afterend',newest);
+      }
       if (!song || !body) return;
       var stanzas = body.querySelectorAll('.stanza');
       Array.prototype.forEach.call(stanzas, function(stanza, index) {
