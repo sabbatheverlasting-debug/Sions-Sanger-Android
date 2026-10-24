@@ -47,7 +47,7 @@ public final class SionsAudio {
   File temp=File.createTempFile("import-",".tmp",folder);long bytes=0;
   try(OutputStream out=new FileOutputStream(temp)){byte[] b=new byte[32768];int n;while((n=in.read(b))!=-1){bytes+=n;if(bytes>100L*1024*1024)throw new IOException("Ljudfilen är för stor");out.write(b,0,n);}}catch(Exception e){temp.delete();throw e;}
   if(bytes==0){temp.delete();throw new IOException("Tom ljudfil");}
-  File target=new File(folder,number+"-"+java.util.UUID.randomUUID()+ext);
+  File target=new File(folder,java.util.UUID.randomUUID()+ext);
   if(!temp.renameTo(target)){temp.delete();throw new IOException("Kunde inte spara ljudet");}
   synchronized(this){JSONObject index=index();JSONObject old=index.optJSONObject(number);JSONObject item=new JSONObject().put("number",number).put("title",title).put("file",target.getName());index.put(number,item);if(!prefs.edit().putString("index",index.toString()).remove("cues-"+number).commit()){target.delete();throw new IOException("Kunde inte spara registret");}}
   return true;
