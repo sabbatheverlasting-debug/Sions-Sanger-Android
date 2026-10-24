@@ -60,7 +60,7 @@
   var slider=document.createElement('input');slider.type='range';slider.min='0';slider.max='1';slider.step='0.1';slider.value='0';slider.setAttribute('aria-label','Spola i inspelningen');
   var time=document.createElement('span');time.className='sau-mini-time';time.textContent='0:00 / 0:00';
   progress.append(slider,time);bar.append(row,progress);
-  var nav=document.querySelector('.bottom-nav');
+  var nav=window.SabbathAudioNative?document.querySelector('.app-shell > .bottom-nav'):null;
   var host=null,originalBodyPadding=document.body.style.paddingBottom;
   if(nav){nav.append(launch,bar);}
   else{
