@@ -36,6 +36,14 @@ async function open(imported){
  assert.equal(d.getElementById('allSongsCount').textContent,'1');assert(d.body.textContent.includes(song.title));
 
 
+
+ const reader=d.getElementById('songScreen');
+ console.log('READER_INSPECT',JSON.stringify({
+  cls:reader.className,hidden:reader.hidden,style:reader.getAttribute('style'),
+  children:[...reader.children].map(n=>({tag:n.tagName,cls:n.className,id:n.id})),
+  songInner:d.querySelector('.song-inner')?.outerHTML.slice(0,2200).replace(/<svg[\s\S]*?<\/svg>/g,'[icon]'),
+  styles:[...d.styleSheets].flatMap(sheet=>{try{return [...sheet.cssRules].filter(r=>/song-screen|song-inner|song-top|songBody|bottom-nav|hero-note|category-strip|search-mode/.test(r.selectorText||'')).slice(0,55).map(r=>(r.selectorText||'')+' '+r.cssText.slice(0,400));}catch(e){return [];}}).slice(0,45)
+ }));
  assert.deepEqual(JSON.parse(w.localStorage.getItem('sions-sanger-imports-1')),[song],'An update keeps manual imports, including same-number songs');
  assert.equal(w.localStorage.getItem('sions-app-colour-v1'),'#49345e');
 
