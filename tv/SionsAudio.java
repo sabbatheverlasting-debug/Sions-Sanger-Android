@@ -37,10 +37,13 @@ public final class SionsAudio {
  private String name(Uri u){try(android.database.Cursor c=activity.getContentResolver().query(u,new String[]{OpenableColumns.DISPLAY_NAME},null,null,null)){if(c!=null&&c.moveToFirst())return c.getString(0);}catch(Exception ignored){}return "audio";}
  private boolean isAudio(String name){return name.toLowerCase(Locale.ROOT).matches(".*\\.(mp3|opus|ogg|m4a|wav|aac|flac)$");}
  private boolean save(InputStream in,String original,String forced)throws Exception{
-  String name=new File(original).getName();Matcher m=Pattern.compile("^(\\d+)([a-zA-Z]?)[.․ _-]*([^/]+)$").matcher(name);boolean numbered=m.matches();if(!numbered&&forced.isEmpty())throw new IOException("Sångnummer saknas");
-  String number=!forced.isEmpty()?forced:Integer.toString(Integer.parseInt(m.group(1)))+m.group(2).toLowerCase(Locale.ROOT);
-  String ext=name.substring(name.lastIndexOf('.')).toLowerCase(Locale.ROOT);
-  String title=numbered?m.group(3):name;title=title.substring(0,title.lastIndexOf('.')).replace('_',' ').trim();
+  String name=new File(original).getName();
+  int dot=name.lastIndexOf('.');if(dot<0||!isAudio(name))throw new IOException("Unsupported audio file");
+  String stem=name.substring(0,dot),ext=name.substring(dot).toLowerCase(Locale.ROOT);
+  Matcher m=Pattern.compile("^(\\d+)([a-zA-Z]?)(?:[.․ _-]+(.*))?$").matcher(stem);
+  boolean numbered=m.matches();
+  String number=!forced.isEmpty()?forced:(numbered?Integer.toString(Integer.parseInt(m.group(1)))+m.group(2).toLowerCase(Locale.ROOT):"unassigned:"+java.util.UUID.randomUUID().toString());
+  String title=(numbered&&m.group(3)!=null&&!m.group(3).isEmpty()?m.group(3):stem).replace('_',' ').trim();
   File temp=File.createTempFile("import-",".tmp",folder);long bytes=0;
   try(OutputStream out=new FileOutputStream(temp)){byte[] b=new byte[32768];int n;while((n=in.read(b))!=-1){bytes+=n;if(bytes>100L*1024*1024)throw new IOException("Ljudfilen är för stor");out.write(b,0,n);}}catch(Exception e){temp.delete();throw e;}
   if(bytes==0){temp.delete();throw new IOException("Tom ljudfil");}
@@ -64,6 +67,7 @@ public final class SionsAudio {
   if(enabled){Uri uri=new Uri.Builder().scheme("content").authority(activity.getPackageName()+".audio").appendPath(item.getString("file")).build();activity.grantUriPermission("se.churchshow.tvbridge",uri,Intent.FLAG_GRANT_READ_URI_PERMISSION);i.setData(uri).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);}
   i.putExtra("audio",meta.toString());activity.sendBroadcast(i);announcedTv=enabled;
  }catch(Exception ignored){}}
+ public void stop(){ui.post(()->{release();current="";position=0;duration=0;error="";publishAudio();});}
  public void pause(){ui.post(()->{if(player!=null&&ready)try{player.pause();position=player.getCurrentPosition();playing=false;publishAudio();}catch(Exception ignored){}});}
  public void seek(String number,double seconds){ui.post(()->{if(player!=null&&ready&&current.equals(number)&&Double.isFinite(seconds)&&seconds>=0)try{player.seekTo((int)Math.min(duration,seconds*1000));position=(long)Math.min(duration,seconds*1000);}catch(Exception ignored){}});}
  public String cues(String number){return prefs.getString("cues-"+number,"{}");}
