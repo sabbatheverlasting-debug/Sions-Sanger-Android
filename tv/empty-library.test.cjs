@@ -66,17 +66,25 @@ async function open(imported){
  fixedTools.querySelectorAll('button')[1].click();
  assert(fixedTools.isConnected,'A+ keeps its original click handler after relocating');
 
- assert.equal(d.querySelectorAll('#stv-reader-tools').length,1,'Exactly one collapsible TV control block per song');
- const tvTools=d.getElementById('stv-reader-tools');
- assert.equal(tvTools.tagName,'DETAILS','TV actions collapse instead of occupying a permanent block');
- assert(!tvTools.open,'TV actions are initially collapsed');
- assert.equal(d.querySelectorAll('#stv-reader-show,#stv-reader-next').length,2,'Original TV actions remain available');
+ assert.equal(d.querySelectorAll('#stv-reader-tools,#stv-reader-show,#stv-reader-next').length,0,
+   'The redundant in-song TV controls are removed, so there is only one reader TV button');
+ const topTv=d.getElementById('sions-tv-shortcut');
+ topTv.click();
+ assert(!d.getElementById('sions-tv-panel').hidden,
+   'The single top TV button opens the full presenter with verse navigation');
+ d.getElementById('stv-close').click();
+ assert(d.getElementById('sions-tv-panel').hidden,'TV presenter closes normally');
  w.SionsAndroid.audioCues=()=> '{}';
  w.eval(fs.readFileSync('tv/audio-controls.js','utf8'));
  const musicTools=d.querySelector('.song-utility-strip > .sau-song-options');
  assert(musicTools&&!musicTools.open,'Music import and seek controls collapse by default');
  assert(musicTools.querySelector('#sau-controls'),'Existing audio actions and file import survive within disclosure');
- assert.equal(d.querySelectorAll('.song-utility-strip > details').length,2,'One compact utility row has separate TV and music controls');
+ assert.equal(d.querySelectorAll('.song-utility-strip > details').length,1,
+   'Only the optional music control takes space above verses; TV is in the fixed header');
+ assert.match(html,/#songScreen \.song-head \.ornament\{/,
+   'Decorative star is styled inside the song heading');
+ assert.match(html,/line-height:1\.32!important/,
+   'Verse leading is more compact while saved user font size is unchanged');
 
 
  w.eval(fs.readFileSync('tv/audio-mini-player.js','utf8'));
