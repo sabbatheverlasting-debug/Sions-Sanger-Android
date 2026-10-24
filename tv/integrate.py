@@ -53,6 +53,14 @@ html = replace_once(html,
     "index.html")
 # In catalogue mode only the list of songs scrolls. The existing header,
 # search/categories, phone camera/status inset, and bottom navigation stay put.
+# The WebView can draw beneath Android's status indicators. Reserve real space
+# for the clock, camera cutout, Wi-Fi and battery without touching the reading view.
+html = html.replace("</style>", """
+#listScreen > header.hero{
+  padding-top:max(58px, calc(env(safe-area-inset-top) + 22px))!important;
+}
+</style>""", 1)
+
 # The reader/TV screens keep their original scrolling and presentation layout.
 html = html.replace("</style>", """
 @media (orientation:portrait) and (min-height:620px) {
