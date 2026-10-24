@@ -371,6 +371,44 @@ html = html.replace("</style>", """
 }
 </style>""", 1)
 
+
+# On mobile, the line-and-star ornament belonged under the centre-aligned
+# title, not flush-left in the reader. Recover a little more space for 4 verses.
+# Do not alter users' stored font size or remove the original star symbol.
+html = html.replace("</style>", """
+@media(max-width:810px){
+ #songScreen .song-head .ornament{
+   display:flex!important;align-items:center!important;justify-content:center!important;
+   width:150px!important;max-width:55%!important;
+   margin:2px auto 4px!important;padding:0!important;
+   min-height:12px!important;height:12px!important;
+   line-height:1!important;text-align:center!important;
+   gap:9px!important;
+ }
+ #songScreen .song-head .ornament:before,
+ #songScreen .song-head .ornament:after{
+   content:'';display:block!important;
+   width:44px!important;max-width:44px!important;flex:0 1 44px!important;
+   height:1px!important;margin:0!important;
+ }
+ #songScreen .song-utility-strip{
+   margin:1px auto 3px!important;min-height:0!important;
+ }
+ #songScreen .song-head h2{
+   margin:2px auto 3px!important;line-height:1.09!important;
+ }
+ #songScreen .song-category,
+ #songScreen .song-meta,
+ #songScreen .song-head .subtitle,
+ #songScreen .song-head p{
+   margin:1px auto 3px!important;line-height:1.15!important;
+ }
+ #songScreen .lyric-area{padding-top:2px!important;padding-bottom:7px!important}
+ #songScreen .stanza{margin-bottom:5px!important}
+ #songScreen .stanza-text,#songScreen .verse-line{line-height:1.32!important}
+}
+</style>""", 1)
+
 # Keep titles larger than the verse text, without changing the imported song.
 html = html.replace("</style>", """
 /* Song heading hierarchy */
