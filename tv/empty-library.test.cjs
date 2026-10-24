@@ -56,7 +56,7 @@ async function open(imported){
  assert(sourceTools&&sourceTools.querySelectorAll('button').length===2,'Existing A−/A+ tools remain available');
  w.SionsAndroid.tvAddress=()=>'';w.SionsAndroid.tvCode=()=>'';w.SionsAndroid.tvUpdate=()=>{};
  w.eval(fs.readFileSync('tv/tv-controls.js','utf8'));
- const fixedTools=d.querySelector('#songScreen .song-inner > .small-toolbar');
+ const fixedTools=d.querySelector('#songScreen .song-top .song-actions > .small-toolbar');
  assert(fixedTools&&fixedTools===sourceTools,'Actual A−/A+ controls moved above song text');
  assert(!d.querySelector('#songBody .small-toolbar'),'Song scroll container must contain NO font toolbar');
  assert.equal(d.querySelectorAll('#sions-tv-open,#sions-tv-shortcut').length,2,'TV shortcut exists in each view');
@@ -65,6 +65,19 @@ async function open(imported){
  const oldSize=d.documentElement.style.getPropertyValue('--lyric-size')||'';
  fixedTools.querySelectorAll('button')[1].click();
  assert(fixedTools.isConnected,'A+ keeps its original click handler after relocating');
+
+ assert.equal(d.querySelectorAll('#stv-reader-tools').length,1,'Exactly one collapsible TV control block per song');
+ const tvTools=d.getElementById('stv-reader-tools');
+ assert.equal(tvTools.tagName,'DETAILS','TV actions collapse instead of occupying a permanent block');
+ assert(!tvTools.open,'TV actions are initially collapsed');
+ assert.equal(d.querySelectorAll('#stv-reader-show,#stv-reader-next').length,2,'Original TV actions remain available');
+ w.SionsAndroid.audioCues=()=> '{}';
+ w.eval(fs.readFileSync('tv/audio-controls.js','utf8'));
+ const musicTools=d.querySelector('.song-utility-strip > .sau-song-options');
+ assert(musicTools&&!musicTools.open,'Music import and seek controls collapse by default');
+ assert(musicTools.querySelector('#sau-controls'),'Existing audio actions and file import survive within disclosure');
+ assert.equal(d.querySelectorAll('.song-utility-strip > details').length,2,'One compact utility row has separate TV and music controls');
+
 
  w.eval(fs.readFileSync('tv/audio-mini-player.js','utf8'));
  d.dispatchEvent(new w.Event('DOMContentLoaded'));
