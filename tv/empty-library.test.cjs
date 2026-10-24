@@ -34,14 +34,6 @@ async function open(imported){
  dom=await open([song]);w=dom.window;d=w.document;
  assert.equal(d.getElementById('allSongsCount').textContent,'1');assert(d.body.textContent.includes(song.title));
 
- const row=d.querySelector('.song-row');if(row)row.click();
- console.log('FONT_LAYOUT_DEBUG',JSON.stringify({
-  songScreen:d.getElementById('songScreen')?.outerHTML.slice(0,12000),
-  candidates:[...d.querySelectorAll('button,input[type=range]')].filter(n=>/font|size|text|storlek|A\+|A−|A-|öka|minska/i.test([n.id,n.className,n.textContent,n.title,n.getAttribute('aria-label')].join(' '))).slice(0,50).map(n=>({tag:n.tagName,id:n.id,cl:n.className,label:n.getAttribute('aria-label'),text:n.textContent.slice(0,80),parent:n.parentElement?.outerHTML.slice(0,900)}))
- }));
-
-
-
 
  assert.deepEqual(JSON.parse(w.localStorage.getItem('sions-sanger-imports-1')),[song],'An update keeps manual imports, including same-number songs');
  assert.equal(w.localStorage.getItem('sions-app-colour-v1'),'#49345e');
@@ -58,6 +50,21 @@ async function open(imported){
  };
  w.setInterval=()=>0;
  w.SionsTvData=()=>({library:[song],activeSong:song,openSong(){}});
+ // The old font controls remain functional, but must live OUTSIDE #songBody.
+ const sourceTools=d.querySelector('#songBody .small-toolbar');
+ assert(sourceTools&&sourceTools.querySelectorAll('button').length===2,'Existing A−/A+ tools remain available');
+ w.SionsAndroid.tvAddress=()=>'';w.SionsAndroid.tvCode=()=>'';w.SionsAndroid.tvUpdate=()=>{};
+ w.eval(fs.readFileSync('tv/tv-controls.js','utf8'));
+ const fixedTools=d.querySelector('#songScreen .song-inner > .small-toolbar');
+ assert(fixedTools&&fixedTools===sourceTools,'Actual A−/A+ controls moved above song text');
+ assert(!d.querySelector('#songBody .small-toolbar'),'Song scroll container must contain NO font toolbar');
+ assert.equal(d.querySelectorAll('#sions-tv-open,#sions-tv-shortcut').length,2,'TV shortcut exists in each view');
+ assert(d.getElementById('sions-tv-open').hidden,'Catalogue TV shortcut hidden in song reader');
+ assert(!d.getElementById('sions-tv-shortcut').hidden,'Only reader TV shortcut visible while reading');
+ const oldSize=d.documentElement.style.getPropertyValue('--lyric-size')||'';
+ fixedTools.querySelectorAll('button')[1].click();
+ assert(fixedTools.isConnected,'A+ keeps its original click handler after relocating');
+
  w.eval(fs.readFileSync('tv/audio-mini-player.js','utf8'));
  d.dispatchEvent(new w.Event('DOMContentLoaded'));
  const launch=d.getElementById('sau-mini-launch'),panel=d.getElementById('sau-mini-player');
