@@ -1,0 +1,60 @@
+name: Exportera komplett Android Studio-projekt
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/export-android-studio.yml'
+      - 'Sions_Sanger_Android_Officiell_Build_1.2.zip'
+      - 'tv/**'
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Hämta projekt
+        uses: actions/checkout@v4
+      - name: Packa upp Android-projekt
+        shell: bash
+        run: |
+          mkdir -p android-source
+          unzip -q Sions_Sanger_Android_Officiell_Build_1.2.zip -d android-source
+          test -f android-source/settings.gradle || test -f android-source/settings.gradle.kts
+          test -f android-source/app/build.gradle || test -f android-source/app/build.gradle.kts
+      - name: Integrera senaste mobil- och TV-förbättringarna
+        run: python3 tv/integrate.py android-source
+      - name: Skapa läsanvisning
+        shell: bash
+        run: |
+          cat > android-source/README-ANDROID-STUDIO.md <<'EOF'
+          # Sions Sånger — Android Studio
+          
+          Detta projekt utgår från det officiella Android-underlaget och har de senaste ändringarna från tv/integrate.py inlagda.
+          
+          1. Packa upp ZIP-filen.
+          2. Starta Android Studio och välj **Open**.
+          3. Välj den uppackade mappen där settings.gradle finns.
+          4. Låt Gradle Sync slutföras och installera föreslagen Android SDK vid behov.
+          5. Välj **Run** för att testa på telefon.
+          
+          För publicering: skapa en **release AAB** med egen säker signering via Android Studio > Build > Generate Signed Bundle / APK. Håll keystore och lösenord privata. Kontrollera appens paket-id, versionCode, innehållsrättigheter och Play Console-krav innan uppladdning.
+          
+          Den separata TV-appen är en egen byggvariant som skapas via GitHubs ursprungliga TV-byggsteg; den ingår inte som ett separat Android Studio-projekt i denna export.
+          EOF
+      - name: Ta bort tillfälliga och hemliga filer
+        run: |
+          find android-source -type f \\( -name '*.keystore' -o -name '*.jks' -o -name '*.p12' -o -name 'local.properties' \\) -delete
+      - name: Arkivera ett öppningsbart Android Studio-projekt
+        run: |
+          cd android-source
+          zip -q -r ../Sions-Sanger-Android-Studio.zip . -x '*/build/*' '*/.gradle/*' '*/.idea/*'
+          cd ..
+          unzip -tq Sions-Sanger-Android-Studio.zip
+      - name: Publicera ZIP som GitHub-artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Sions-Sanger-Android-Studio
+          path: Sions-Sanger-Android-Studio.zip
+          if-no-files-found: error
+          retention-days: 90
