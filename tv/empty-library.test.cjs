@@ -122,7 +122,7 @@ async function open(imported){
 
 
  // The in-app photo guide must be reachable without importing any lyrics.
- assert.match(html,/note-photo-guide\\.js/,'Sheet music photo guide is installed in Android assets');
+ assert.match(html,/note-photo-guide\.js/,'Sheet music photo guide is installed in Android assets');
  w.eval(fs.readFileSync('tv/note-photo-guide.js','utf8'));
  d.dispatchEvent(new w.Event('DOMContentLoaded'));
  const guide=d.getElementById('sions-note-photo-guide');
