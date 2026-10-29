@@ -15,6 +15,8 @@ import java.util.concurrent.Executors;
  */
 public final class SionsTvServer {
     private final Context context;
+    private volatile SionsScore scores;
+    public void setScores(SionsScore value) { this.scores = value; }
     private final String accessCode;
     private final ExecutorService clients = Executors.newFixedThreadPool(3);
     private volatile String state = "{\"title\":\"Sions Sånger\",\"lines\":[\"Välj en sång på mobilen\"],\"section\":\"\",\"total\":0,\"index\":0,\"theme\":\"navy\",\"blank\":false}";
@@ -104,6 +106,17 @@ public final class SionsTvServer {
                 }
             } else if ("/state".equals(uri.getPath())) {
                 send(socket, 200, "application/json; charset=utf-8", state.getBytes(StandardCharsets.UTF_8));
+            } else if ("/score".equals(uri.getPath())) {
+                String number = ""; int page = -1;
+                if(q!=null)for(String pair:q.split("&")) {
+                    String[] parts=pair.split("=",2);
+                    if(parts.length!=2)continue;
+                    if("number".equals(parts[0]))number=URLDecoder.decode(parts[1],"UTF-8");
+                    if("page".equals(parts[0]))try{page=Integer.parseInt(parts[1]);}catch(NumberFormatException ignored){}
+                }
+                byte[] jpeg=scores==null?null:scores.pageBytes(number,page,2200);
+                if(jpeg==null)send(socket,404,"text/plain; charset=utf-8","Notsidan saknas".getBytes(StandardCharsets.UTF_8));
+                else send(socket,200,"image/jpeg",jpeg);
             } else {
                 send(socket, 404, "text/plain; charset=utf-8", "Sidan finns inte".getBytes(StandardCharsets.UTF_8));
             }
