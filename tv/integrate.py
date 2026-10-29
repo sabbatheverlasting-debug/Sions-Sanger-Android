@@ -728,7 +728,7 @@ index.write_text(empty_library(index.read_text(encoding="utf-8")),encoding="utf-
 shutil.copy2(tv_folder / "SionsScore.java", java_folder / "SionsScore.java")
 shutil.copy2(tv_folder / "score-viewer.js", assets / "score-viewer.js")
 html = index.read_text(encoding="utf-8")
-html = replace_once(html, "</body>", '<script src="score-viewer.js"></script>\n</body>', "index.html")
+html = replace_once(html, "</body>", '<script src="opensheetmusicdisplay.min.js"></script>\n<script src="score-viewer.js"></script>\n</body>', "index.html")
 index.write_text(html, encoding="utf-8")
 text = java.read_text(encoding="utf-8")
 text = replace_once(text, "    private SionsAudio audio;",
@@ -744,13 +744,14 @@ score_methods = """
         @JavascriptInterface public void scorePick(String number) { if(score!=null)score.pick(number); }
         @JavascriptInterface public String scoreInfo(String number) { return score==null?"{}":score.info(number); }
         @JavascriptInterface public String scorePage(String number,int page) { return score==null?"":score.pageData(number,page); }
+        @JavascriptInterface public String scoreXml(String number) { return score==null?"":score.xml(number); }
         @JavascriptInterface public void scoreRemove(String number) { if(score!=null)score.remove(number); }
 """
 text = replace_once(text, "    private class AppBridge {",
     "    private class AppBridge {" + score_methods, "MainActivity.java")
 java.write_text(text, encoding="utf-8")
 build = gradle.read_text(encoding="utf-8")
-build = replace_once(build, "versionCode 17", "versionCode 18", "app/build.gradle")
-build = replace_once(build, "versionName '1.16'", "versionName '1.17'", "app/build.gradle")
+build = replace_once(build, "versionCode 17", "versionCode 19", "app/build.gradle")
+build = replace_once(build, "versionName '1.16'", "versionName '1.18'", "app/build.gradle")
 gradle.write_text(build, encoding="utf-8")
-print("Notvisare integrerad: separata PDF- och bildpaket, sida-för-sida och Wi-Fi-TV. Version 1.17.")
+print("Notvisare integrerad: separata PDF- och bildpaket, sida-för-sida och Wi-Fi-TV. Version 1.18.")
