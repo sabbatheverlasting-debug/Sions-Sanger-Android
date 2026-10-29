@@ -675,11 +675,11 @@ for item in ["audio-match.js", "audio-follow.js", "audio-controls.js",
     shutil.copy2(tv_folder / item, assets / item)
 html = index.read_text(encoding="utf-8")
 html = html.replace("fontSize: config.size};", "fontSize: config.size, openSong: openSong};", 1)
-audio_scripts = "\\n".join('<script src="' + item + '"></script>' for item in [
+audio_scripts = "\n".join('<script src="' + item + '"></script>' for item in [
     "audio-match.js", "audio-follow.js", "audio-controls.js",
     "audio-mini-player.js", "note-photo-guide.js"
 ])
-html = html.replace("</body>", audio_scripts + "\\n</body>", 1)
+html = html.replace("</body>", audio_scripts + "\n</body>", 1)
 index.write_text(html, encoding="utf-8")
 text = java.read_text(encoding="utf-8")
 text = text.replace("    private SionsTvServer tvServer;", "    private SionsTvServer tvServer;\n    private SionsAudio audio;", 1)
