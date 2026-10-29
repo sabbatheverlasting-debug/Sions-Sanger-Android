@@ -118,14 +118,25 @@
             if(printed&&printed.textContent.trim())title=printed.textContent.trim();
           }catch(e){}
           $('score-heading').textContent=title||'Noter';
+          // State how many measures are actually present in the imported score.
+          // An intentionally short source must not be mistaken for missing notes.
+          var measureCount=0;
+          try{
+            var parsed=new DOMParser().parseFromString(xml,'application/xml');
+            var firstPart=parsed.querySelector('part[id]');
+            measureCount=firstPart?firstPart.querySelectorAll('measure').length:
+              parsed.querySelectorAll('score-timewise > measure').length;
+          }catch(e){}
+          var measureLabel=measureCount?String(measureCount)+' takter i filen. ':'';
+          
           try{
             osmd=new window.opensheetmusicdisplay.OpenSheetMusicDisplay('sions-score-xml',{
-              backend:'svg',autoResize:false,drawTitle:false,drawingParameters:'compacttight',pageFormat:'Endless'
+              backend:'svg',autoResize:false,drawTitle:false,drawingParameters:'compacttight',pageFormat:'Endless',stretchLastSystemLine:true
             });
             osmd.load(xml).then(function(){
               if(ticket!==generation)return;
               zoomScore();
-              $('score-message').textContent='Hela notbilden fortsätter nedåt – rulla för att se alla takter.';
+              $('score-message').textContent=measureLabel+'Sista raden fyller bredden. Rulla nedåt för resten.';
             }).catch(function(e){
               if(ticket===generation)$('score-message').textContent='MusicXML kunde inte visas: '+String(e.message||e);
             });
@@ -159,7 +170,9 @@
       // OSMD chooses line breaks from its container width. CSS-resizing an already
       // rendered SVG used to crop staves; recalculate the entire score instead.
       var baseWidth=Math.max(240,canvas.clientWidth-16);
-      div.style.width=Math.round(baseWidth*zoom)+'px';
+      // Keep the page width stable. OSMD.Zoom alone changes notation size;
+      // multiplying BOTH width and Zoom previously made notes overflow.
+      div.style.width=Math.round(baseWidth)+'px';
       div.style.maxWidth='none';
       try {
         osmd.Zoom=zoom;
