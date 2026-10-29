@@ -30,7 +30,7 @@ async function open(imported){
  assert.match(html,/#songScreen #songBody\{[\s\S]*?overflow-y:auto!important/,
    'Only hymn contents scroll independently of the reader toolbar');
 
- const song={song_number:1,title:'Egen testsång',category:null,authors:[],sections:[{type:'verse',number:1,lines:['Min egen provrad.']}]};
+ const song={song_number:1,title:'Egen testsång',category:null,authors:[],sections:[{type:'verse',number:1,lines:['Min egen provrad.']},{type:'verse',number:2,lines:['Första exakta raden.','Andra exakta raden.']}]};
  dom=await open([song]);w=dom.window;d=w.document;
  assert.equal(d.getElementById('allSongsCount').textContent,'1');assert(d.body.textContent.includes(song.title));
 
@@ -74,6 +74,18 @@ async function open(imported){
    'There must be exactly one fixed font-size toolbar');
  assert.equal(d.getElementById('sions-reader-mode').querySelectorAll('button').length,2,
    'The reader has one Book/Song display switcher');
+
+ assert(!d.querySelector('.stanza:first-child[data-sions-explicit-lines="true"]'),
+   'One long JSON paragraph must never be guessed into separate lyric lines');
+ assert.equal(d.querySelectorAll('.stanza[data-sions-explicit-lines="true"]').length,1,
+   'A JSON verse with two original lines is marked for faithful song layout');
+ assert.equal(d.querySelector('.stanza[data-sions-explicit-lines="true"]').querySelectorAll('.verse-line').length,2,
+   'The original two exact lyric lines are still separate DOM elements');
+ assert.match(html,/data-sions-explicit-lines="true"/,
+   'Song mode separates lines only where JSON contains explicit structure');
+ assert.match(html,/margin-bottom:11px!important/,
+   'Song mode is compact, not artificially double-spaced');
+
  assert.equal(d.getElementById('songScreen').dataset.sionsReaderMode,'book','Book view is the default');
  const textBefore=d.getElementById('songBody').textContent;
  d.querySelector('#sions-reader-mode [data-mode="sing"]').click();
