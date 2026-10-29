@@ -79,6 +79,7 @@ jobs:
           npm install --prefix "$RUNNER_TEMP/sions-colour-tests" --no-save --ignore-scripts --no-audit --no-fund jsdom@26.1.0
           CHROME_PATH="$(command -v google-chrome || command -v chromium || true)" SIONS_PREVIEW_DIR="$RUNNER_TEMP/sions-colour-previews" NODE_PATH="$RUNNER_TEMP/sions-colour-tests/node_modules" node tv/appearance.test.cjs
           NODE_PATH="$RUNNER_TEMP/sions-colour-tests/node_modules" node tv/empty-library.test.cjs
+          NODE_PATH="$RUNNER_TEMP/sions-colour-tests/node_modules" node tv/smart-import.test.cjs
           node tv/backup.test.cjs
           NODE_PATH="$RUNNER_TEMP/sions-colour-tests/node_modules" node tv/score-viewer.test.cjs
 
