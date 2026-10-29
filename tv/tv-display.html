@@ -80,7 +80,7 @@ function showMusicXml(data){
       if(ticket!==xmlGeneration)return;
       target.textContent='';
       xmlRenderer=new opensheetmusicdisplay.OpenSheetMusicDisplay('score-xml',{
-        backend:'svg',autoResize:false,drawTitle:false,drawingParameters:'compacttight',pageFormat:'Endless'
+        backend:'svg',autoResize:false,drawTitle:false,drawingParameters:'compacttight',pageFormat:'Endless',stretchLastSystemLine:true
       });
       return xmlRenderer.load(xml).then(function(){
         if(ticket!==xmlGeneration)return;
