@@ -18,7 +18,9 @@ const {JSDOM}=require('jsdom');
  w.SionsAndroid={
   scoreInfo:()=>JSON.stringify({count:1,mode:'musicxml'}),
   scoreXml:()=>'<score-partwise version="4.0"><movement-title>'+title+
-   '</movement-title><part-list></part-list></score-partwise>',
+   '</movement-title><part-list></part-list><part id="P1">'+
+   '<measure number="1"/><measure number="2"/><measure number="3"/><measure number="4"/>'+
+   '</part></score-partwise>',
   scorePage:()=>'',scoreRemove:()=>{},scorePick:()=>{}
  };
  w.SionsTvData=()=>({activeSong:{song_number:103,title:'Fallback title'}});
@@ -38,8 +40,11 @@ const {JSDOM}=require('jsdom');
  assert.equal(heading.textContent,title,'Whole MusicXML title is included without truncation');
  assert(!heading.classList.contains('score-hidden'),'Title is visible in score mode');
  assert.equal(options.drawTitle,false,'OSMD must not draw a duplicate, potentially cropped SVG title');
+ assert.equal(options.stretchLastSystemLine,true,'The final system must fill the available page width');
+ assert.match(d.querySelector('#sions-score-message').textContent,/4 takter/,'Show the actual number of measures in the imported score');
  assert(rendered>0,'MusicXML notation is rendered');
  d.querySelector('#sions-score-plus').click();
+ assert.equal(d.querySelector('#sions-score-xml').style.width,'240px','Zoom keeps a single stable layout width');
  assert.equal(heading.textContent,title,'Zoom never changes or truncates heading');
  d.querySelector('#sions-score-fit').click();
  assert.equal(heading.textContent,title,'Fit view preserves heading');
