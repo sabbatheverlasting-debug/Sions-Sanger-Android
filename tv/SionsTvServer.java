@@ -106,6 +106,22 @@ public final class SionsTvServer {
                 }
             } else if ("/state".equals(uri.getPath())) {
                 send(socket, 200, "application/json; charset=utf-8", state.getBytes(StandardCharsets.UTF_8));
+            } else if ("/scorexml".equals(uri.getPath())) {
+                String number="";
+                if(q!=null)for(String pair:q.split("&")) {
+                    String[] parts=pair.split("=",2);
+                    if(parts.length==2 && "number".equals(parts[0]))number=URLDecoder.decode(parts[1],"UTF-8");
+                }
+                String xml=scores==null?"":scores.xml(number);
+                if(xml.isEmpty())send(socket,404,"text/plain; charset=utf-8","Notfil saknas".getBytes(StandardCharsets.UTF_8));
+                else send(socket,200,"application/vnd.recordare.musicxml+xml; charset=utf-8",xml.getBytes(StandardCharsets.UTF_8));
+            } else if ("/vendor/osmd.js".equals(uri.getPath())) {
+                try(InputStream stream=context.getAssets().open("opensheetmusicdisplay.min.js")){
+                    ByteArrayOutputStream buffer=new ByteArrayOutputStream();
+                    byte[] block=new byte[32768];int n;
+                    while((n=stream.read(block))!=-1)buffer.write(block,0,n);
+                    send(socket,200,"text/javascript; charset=utf-8",buffer.toByteArray());
+                }
             } else if ("/score".equals(uri.getPath())) {
                 String number = ""; int page = -1;
                 if(q!=null)for(String pair:q.split("&")) {
