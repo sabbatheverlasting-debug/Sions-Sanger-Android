@@ -25,6 +25,7 @@
       '#sions-score-viewer .score-empty{padding:28px 17px;text-align:center;font:15px/1.5 system-ui;color:#173452}',
       '#sions-score-viewer .score-alert{padding:6px 10px;text-align:center;font:12px/1.4 system-ui;color:#66502d}',
       '#sions-score-viewer .score-hidden{display:none!important}',
+      '#sions-score-heading{font:700 clamp(16px,4vw,24px)/1.3 Georgia,serif;color:#203a53;width:100%;max-width:100%;padding:8px 6px 12px;margin:0;white-space:normal;overflow-wrap:anywhere;word-break:normal;text-align:center;box-sizing:border-box}',
       '#sions-score-xml{background:#fff;width:100%;min-width:0;display:block;text-align:left;overflow:visible;box-sizing:border-box}',
       '#sions-score-xml svg{max-width:none!important;display:block}'
     ].join('\n'); document.head.appendChild(css);
@@ -52,6 +53,7 @@
       '<div class="score-canvas" id="sions-score-canvas">'+
        '<p class="score-empty" id="sions-score-empty">Inga noter importerade för den här sången.</p>'+
        '<img id="sions-score-image" alt="Notbild" class="score-hidden" />'+
+       '<h3 id="sions-score-heading" class="score-hidden"></h3>'+
        '<div id="sions-score-xml" class="score-hidden" aria-label="MusicXML-noter"></div>'+
       '</div>';
     body.insertAdjacentElement('afterend',viewer);
@@ -80,6 +82,7 @@
       setControls();
       if(mode!=='notes')return;
       if(!count){
+        $('score-heading').classList.add('score-hidden');
         $('score-xml').classList.add('score-hidden');
         $('score-image').classList.add('score-hidden');
         $('score-empty').classList.remove('score-hidden');
@@ -90,6 +93,7 @@
       var info=scoreInfo(current);
       if(info.mode==='musicxml'){
         $('score-image').classList.add('score-hidden');
+        $('score-heading').classList.remove('score-hidden');
         $('score-xml').classList.remove('score-hidden');
         var xmlKey='xml:'+current;
         if(lastSource!==xmlKey){
@@ -104,9 +108,18 @@
           var xml='';
           try{xml=native.scoreXml(current);}catch(e){}
           if(!xml){$('score-message').textContent='Kunde inte läsa MusicXML-filen.';return;}
+          // Long score titles are separate, wrapping HTML text. OSMD SVG titles
+          // can extend outside narrow phone viewports and appear cut off.
+          var title=(selectedSong()&&selectedSong().title)||'';
+          try{
+            var scoreDoc=new DOMParser().parseFromString(xml,'application/xml');
+            var printed=scoreDoc.querySelector('movement-title,work-title');
+            if(printed&&printed.textContent.trim())title=printed.textContent.trim();
+          }catch(e){}
+          $('score-heading').textContent=title||'Noter';
           try{
             osmd=new window.opensheetmusicdisplay.OpenSheetMusicDisplay('sions-score-xml',{
-              backend:'svg',autoResize:false,drawTitle:true,drawingParameters:'compacttight'
+              backend:'svg',autoResize:false,drawTitle:false,drawingParameters:'compacttight',pageFormat:'Endless'
             });
             osmd.load(xml).then(function(){
               if(ticket!==generation)return;
@@ -119,6 +132,7 @@
         }else zoomScore();
         return;
       }
+      $('score-heading').classList.add('score-hidden');
       $('score-xml').classList.add('score-hidden');
       var key=current+':'+page;
       if(lastSource!==key){
