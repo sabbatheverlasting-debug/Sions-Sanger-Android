@@ -12,6 +12,7 @@ const {JSDOM}=require('jsdom');
  '</body></html>';
  const dom=new JSDOM(page,{url:'https://sions.test/',runScripts:'outside-only'});
  const w=dom.window,d=w.document;
+ w.HTMLElement.prototype.scrollTo=function(){}; // jsdom lacks browser scrollTo
  const title='My complete hymn title – Över hela skärmen ska rubriken synas';
  let options=null,rendered=0;
  w.SionsAndroid={
