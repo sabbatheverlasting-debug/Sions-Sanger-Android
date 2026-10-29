@@ -87,11 +87,16 @@ public final class SionsScore {
         new Thread(() -> importSelected(number, uris), "sions-score-import").start();
     }
 
+    /** Imported score files already selected by the unified file picker. Call on worker thread. */
+    public void importSmart(String number,java.util.List<Uri> uris){
+        if(validNumber(number)&&uris!=null&&!uris.isEmpty())importSelected(number,uris);
+    }
     private String displayName(Uri uri) {
         try (Cursor c = activity.getContentResolver().query(
                 uri, new String[]{OpenableColumns.DISPLAY_NAME}, null,null,null)) {
             if (c != null && c.moveToFirst()) return c.getString(0);
         } catch (Exception ignored) {}
+        if("file".equals(uri.getScheme())&&uri.getPath()!=null)return new File(uri.getPath()).getName();
         return "noter";
     }
 
