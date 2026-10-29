@@ -52,9 +52,18 @@ def replace_embedded_songs(html, songs):
     # Use validated manifest content ONLY, never copy song texts from old private app.
     clean = []
     for song in songs:
-        clean.append({"id": str(song["id"]), "title": song["title"], "verses": song["verses"],
-                      "category": song.get("category", "Lovsånger"), "author": song.get("author", ""),
-                      "composer": song.get("composer", "")})
+        # Match the *actual* app schema. 31b is numbered 415 in the source hymnbook.
+        source_id = str(song["id"])
+        number = song.get("appSongNumber", 415 if source_id == "31b" else (31 if source_id == "31a" else int(source_id)))
+        if not isinstance(number, int) or number <= 0:
+            raise ValueError(f"Sång {source_id}: ogiltigt appnummer.")
+        sections = [{"type": "verse", "number": i+1, "lines": verse.splitlines()}
+                    for i, verse in enumerate(song["verses"])]
+        clean.append({"song_number": number, "title": song["title"],
+                      "category": song.get("category") or None,
+                      "authors": song.get("authors", []) or [], "sections": sections})
+    if len({s["song_number"] for s in clean}) != len(clean):
+        raise ValueError("Flera sånger har samma nummer i appen.")
     payload = json.dumps({"songs": clean}, ensure_ascii=False, separators=(",", ":")).replace("<", "\\u003c")
     result = html[:match.start(2)] + payload + html[match.end(2):]
     if result.count('id="initialSongs"') + result.count("id='initialSongs'") != 1:
@@ -85,7 +94,7 @@ def main():
     # Validate actual packaged HTML, rather than trusting configuration alone.
     m = SONG_TAG.search(index.read_text(encoding="utf-8"))
     found = json.loads(m.group(2))["songs"] if m else []
-    if len(found) != args.count or {str(s["id"]) for s in found} != {str(s["id"]) for s in songs}:
+    if len(found) != args.count or not all(x.get("song_number") and x.get("sections") for x in found):
         raise ValueError("Publiceringskontrollen misslyckades efter paketering.")
     print(f"KLAR FÖR TEKNISK APK-BYGGNAD: {old_count} inbyggda poster ersattes med {len(found)} kontrollerade. Juridisk slutkontroll kvarstår.")
 
