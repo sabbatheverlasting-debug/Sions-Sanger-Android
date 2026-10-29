@@ -121,6 +121,21 @@ async function open(imported){
    'Verse leading is more compact while saved user font size is unchanged');
 
 
+ // The in-app photo guide must be reachable without importing any lyrics.
+ assert.match(html,/note-photo-guide\\.js/,'Sheet music photo guide is installed in Android assets');
+ w.eval(fs.readFileSync('tv/note-photo-guide.js','utf8'));
+ d.dispatchEvent(new w.Event('DOMContentLoaded'));
+ const guide=d.getElementById('sions-note-photo-guide');
+ const moreGuide=d.querySelector('#moreScreen [data-note-photo-guide="more"]');
+ const libraryGuide=d.querySelector('#sau-catalog [data-note-photo-guide="catalog"]');
+ assert(guide&&guide.hidden&&moreGuide&&libraryGuide,
+   'The guide is reachable from More and the audio library, without opening on launch');
+ moreGuide.click();
+ assert(!guide.hidden,'Photographing instructions open from More');
+ assert(guide.textContent.includes('klav')&&guide.textContent.includes('1×')&&guide.textContent.includes('MIDI'),
+   'Instructions cover required photo details and MIDI limitations');
+ guide.querySelector('.sng-close').click();
+ assert(guide.hidden,'The guide closes and returns to the songbook');
  w.eval(fs.readFileSync('tv/audio-mini-player.js','utf8'));
  d.dispatchEvent(new w.Event('DOMContentLoaded'));
  const launch=d.getElementById('sau-mini-launch'),panel=d.getElementById('sau-mini-player');
