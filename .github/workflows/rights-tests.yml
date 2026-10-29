@@ -1,0 +1,30 @@
+name: Verifiera Sions publiceringsspärr
+on:
+  push:
+    branches:
+      - rights-audit-2026-10-29
+      - main
+    paths:
+      - 'rights/**'
+      - '.github/workflows/rights-tests.yml'
+  pull_request:
+    paths:
+      - 'rights/**'
+      - '.github/workflows/rights-tests.yml'
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Kontrollera Python-syntax
+        run: python3 -m compileall -q rights
+      - name: Kör säkerhetstester
+        run: python3 -m unittest discover -s rights -p 'test_*.py' -v
+      - name: Kontrollera att offentlig lista är låst
+        run: |
+          python3 - <<'PY'
+          import json
+          m=json.load(open('rights/public-release-manifest.json',encoding='utf-8'))
+          assert m['releaseAllowed'] is False and m['songs']==[]
+          print('PASS: Ingen olicensierad sång publiceras.')
+          PY
