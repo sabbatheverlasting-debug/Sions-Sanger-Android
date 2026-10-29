@@ -61,44 +61,37 @@
   }
 
   function modeControl() {
-    const body = document.getElementById('songBody');
-    const head = body && body.querySelector('.song-head');
-    if (!head) return;
-
-    // Reuse the reserved, compact row immediately below the song heading.
-    let strip = body.querySelector('#song-utility-strip');
-    if (!strip) {
-      strip = document.createElement('div');
-      strip.id = 'song-utility-strip';
-      strip.className = 'song-utility-strip';
-      head.insertAdjacentElement('afterend', strip);
-    }
-
-    let control = strip.querySelector('#sions-reader-mode');
-    if (!control) {
-      control = document.createElement('div');
-      control.id = 'sions-reader-mode';
-      control.setAttribute('role', 'group');
-      control.setAttribute('aria-label', 'Visningsläge för sången');
-
-      for (const [value, title, description] of [
-        ['book', 'Bok', 'Bokläge: verserna som löpande stycken i originalsångboken'],
-        ['sing', 'Sång', 'Sångläge: korrekta sångrader från importfilen, annars löpande text']
-      ]) {
-        const button = document.createElement('button');
-        button.type = 'button';
-        button.dataset.mode = value;
-        button.textContent = title;
-        button.title = description;
-        button.setAttribute('aria-label', description);
-        button.addEventListener('click', function () {
-          mode = value;
-          try { localStorage.setItem(KEY, mode); } catch (_) {}
+    const root=document.querySelector('#songScreen .song-inner');
+    const body=document.getElementById('songBody');
+    if(!root||!body)return;
+    // Keep all view choices in one fixed row below the reader header;
+    // never hide Bok/Sång inside scrollable lyrics.
+    const tabs=document.getElementById('sions-score-tabs');
+    let control=document.getElementById('sions-reader-mode');
+    if(!control){
+      control=document.createElement('div');
+      control.id='sions-reader-mode';
+      control.setAttribute('role','group');
+      control.setAttribute('aria-label','Textlayout');
+      for(const [value,title,description] of [
+        ['book','Bok','Bokläge: löpande versstycken'],
+        ['sing','Sång','Sångläge: radindelning från importerad sång']
+      ]){
+        const button=document.createElement('button');
+        button.type='button';button.dataset.mode=value;button.textContent=title;
+        button.title=description;button.setAttribute('aria-label',description);
+        button.addEventListener('click',function(){
+          mode=value;
+          try{localStorage.setItem(KEY,mode);}catch(_){}
           showMode();
         });
         control.appendChild(button);
       }
-      strip.appendChild(control);
+    }
+    if(tabs){
+      if(control.parentElement!==tabs)tabs.appendChild(control);
+    }else if(control.parentElement!==root){
+      root.insertBefore(control,body);
     }
     showMode();
   }
@@ -121,5 +114,6 @@
   }
   schedule();
   window.addEventListener('pageshow', schedule);
+  window.addEventListener('sions-view-menu-ready', schedule);
   window.addEventListener('sions-font-change', schedule);
 })();
