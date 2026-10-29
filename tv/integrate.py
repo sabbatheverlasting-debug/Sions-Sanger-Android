@@ -755,3 +755,29 @@ build = replace_once(build, "versionCode 17", "versionCode 21", "app/build.gradl
 build = replace_once(build, "versionName '1.16'", "versionName '1.20'", "app/build.gradle")
 gradle.write_text(build, encoding="utf-8")
 print("Notvisare integrerad: separata PDF- och bildpaket, sida-för-sida och Wi-Fi-TV. Version 1.20.")
+
+
+# Portable complete backup: user-selected ZIP contains library, favorites, settings,
+# Opus/MP3/etc., assigned verse cue points and sheet music. Additive restoration.
+shutil.copy2(tv_folder / "SionsBackup.java", java_folder / "SionsBackup.java")
+shutil.copy2(tv_folder / "backup.js", assets / "backup.js")
+html = index.read_text(encoding="utf-8")
+html = replace_once(html, "</body>", '<script src="backup.js"></script>\n</body>', "index.html")
+index.write_text(html, encoding="utf-8")
+text = java.read_text(encoding="utf-8")
+text = replace_once(text, "    private SionsScore score;",
+    "    private SionsScore score;\n    private SionsBackup backup;", "MainActivity.java")
+text = replace_once(text, "        score = new SionsScore(this, webView);",
+    "        score = new SionsScore(this, webView);\n        backup = new SionsBackup(this, webView);", "MainActivity.java")
+text = replace_once(text,
+    "        super.onActivityResult(requestCode, resultCode, data);",
+    "        super.onActivityResult(requestCode, resultCode, data);\n"
+    "        if(requestCode == SionsBackup.SAVE || requestCode == SionsBackup.RESTORE) { if(backup!=null)backup.result(requestCode,resultCode,data); return; }",
+    "MainActivity.java")
+text = replace_once(text, "    private class AppBridge {",
+    "    private class AppBridge {\n"
+    "        @JavascriptInterface public void backupExport(String state) { if(backup!=null)backup.export(state); }\n"
+    "        @JavascriptInterface public void backupImport() { if(backup!=null)backup.importBackup(); }\n",
+    "MainActivity.java")
+java.write_text(text, encoding="utf-8")
+print("Komplett ZIP-säkerhetskopia integrerad utan att radera användardata.")
