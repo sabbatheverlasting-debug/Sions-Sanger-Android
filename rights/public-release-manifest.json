@@ -1,0 +1,141 @@
+{
+  "schemaVersion": 1,
+  "mode": "default-deny",
+  "preparedOn": "2026-10-29",
+  "description": "20 forskningskandidater – inte rättighetsgodkända",
+  "rightsCleared": false,
+  "releaseAllowed": false,
+  "songs": [],
+  "priorityCandidates": [
+    {
+      "id": "1",
+      "title": "Lova Gud i himmelshöjd",
+      "rightsStatus": "needs_verification",
+      "releaseAllowed": false
+    },
+    {
+      "id": "2",
+      "title": "Höga Majestät, vi alla",
+      "rightsStatus": "needs_verification",
+      "releaseAllowed": false
+    },
+    {
+      "id": "5",
+      "title": "Dig skall min själ sitt offer bära",
+      "rightsStatus": "needs_verification",
+      "releaseAllowed": false
+    },
+    {
+      "id": "6",
+      "title": "Hela världen fröjdes Herran",
+      "rightsStatus": "needs_verification",
+      "releaseAllowed": false
+    },
+    {
+      "id": "7",
+      "title": "Nu tacken Gud, allt folk",
+      "rightsStatus": "needs_verification",
+      "releaseAllowed": false
+    },
+    {
+      "id": "9",
+      "title": "Lova den Herre",
+      "rightsStatus": "needs_verification",
+      "releaseAllowed": false
+    },
+    {
+      "id": "18",
+      "title": "Tack, o Gud",
+      "rightsStatus": "needs_verification",
+      "releaseAllowed": false
+    },
+    {
+      "id": "19",
+      "title": "Lova vill jag Herran, Herran",
+      "rightsStatus": "needs_verification",
+      "releaseAllowed": false
+    },
+    {
+      "id": "20",
+      "title": "Upp, min tunga",
+      "rightsStatus": "needs_verification",
+      "releaseAllowed": false
+    },
+    {
+      "id": "22",
+      "title": "Allena Gud i himmelrik",
+      "rightsStatus": "needs_verification",
+      "releaseAllowed": false
+    },
+    {
+      "id": "29",
+      "title": "Hur ljuvt det är att komma",
+      "rightsStatus": "needs_verification",
+      "releaseAllowed": false
+    },
+    {
+      "id": "30",
+      "title": "Helige Fader, kom och var oss nära",
+      "rightsStatus": "needs_verification",
+      "releaseAllowed": false
+    },
+    {
+      "id": "31a",
+      "title": "Jag lyfter mina händer",
+      "rightsStatus": "needs_verification",
+      "releaseAllowed": false
+    },
+    {
+      "id": "31b",
+      "title": "Befall i Herrens händer",
+      "rightsStatus": "needs_verification",
+      "releaseAllowed": false
+    },
+    {
+      "id": "35",
+      "title": "Herre, vi nu åter samlas",
+      "rightsStatus": "needs_verification",
+      "releaseAllowed": false
+    },
+    {
+      "id": "39",
+      "title": "Ack, saliga stunder",
+      "rightsStatus": "needs_verification",
+      "releaseAllowed": false
+    },
+    {
+      "id": "42",
+      "title": "Kom, Jesus kär",
+      "rightsStatus": "needs_verification",
+      "releaseAllowed": false
+    },
+    {
+      "id": "46",
+      "title": "Den signade dag",
+      "rightsStatus": "needs_verification",
+      "releaseAllowed": false
+    },
+    {
+      "id": "47",
+      "title": "Jesu, låt mig städse börja",
+      "rightsStatus": "needs_verification",
+      "releaseAllowed": false
+    },
+    {
+      "id": "50",
+      "title": "Din klara sol går åter opp",
+      "rightsStatus": "needs_verification",
+      "releaseAllowed": false
+    }
+  ],
+  "blockedKnown": [
+    {
+      "id": "3",
+      "reason": "Otto Olsson (död 1964)"
+    },
+    {
+      "id": "48",
+      "reason": "Jacob Nyvall (död 1961)"
+    }
+  ]
+}

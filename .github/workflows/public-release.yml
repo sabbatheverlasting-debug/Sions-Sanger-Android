@@ -1,0 +1,64 @@
+name: Sions Sånger – säker publik utgåva (20 klarerade)
+on:
+  workflow_dispatch:
+jobs:
+  public-apk:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Testa rättighetsvalideringen
+        run: python3 -m unittest discover -s rights -p 'test_*.py' -v
+      - name: Förbered endast rättighetsgodkända sånger
+        run: |
+          python3 rights/build_public_source.py --manifest rights/public-release-manifest.json --output-dir android-source --count 20
+      - name: Installera Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Installera Android SDK
+        uses: android-actions/setup-android@v4
+      - name: Installera Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+      - name: Installera Android API 35
+        run: sdkmanager 'platforms;android-35' 'build-tools;35.0.0'
+      - name: Återställ ordinarie signeringsnyckel
+        env:
+          SIONS_SIGNING_KEY_B64: ${{ secrets.SIONS_SIGNING_KEY_B64 }}
+        run: |
+          python3 - <<'PY'
+          import os,base64,pathlib
+          data=os.environ.get('SIONS_SIGNING_KEY_B64','').strip()
+          if not data: raise SystemExit('Signeringsnyckel saknas, bygger inte.')
+          key=pathlib.Path('android-source/sions-signing.p12')
+          key.write_bytes(base64.b64decode(data, validate=True))
+          key.chmod(0o600)
+          PY
+      - name: Konfigurera befintlig signering och unikt versionsnummer
+        env:
+          SIONS_VERSION_CODE: ${{ github.run_number }}
+        run: |
+          python3 - <<'PY'
+          import os,pathlib
+          f=pathlib.Path('android-source/app/build.gradle')
+          code=100000+int(os.environ['SIONS_VERSION_CODE'])
+          with f.open('a') as out:
+              out.write("\\nandroid { signingConfigs { debug { storeFile rootProject.file('sions-signing.p12'); storePassword 'android'; keyAlias 'androiddebugkey'; keyPassword 'android'; storeType 'PKCS12' } }; defaultConfig { versionCode " + str(code) + " } }\\n")
+          PY
+      - name: Bygg publiceringssäker APK
+        run: |
+          gradle -p android-source --no-daemon :app:assembleDebug
+          cp android-source/app/build/outputs/apk/debug/app-debug.apk Sions-Sanger-Public-20.apk
+      - name: Kontrollera signering
+        run: |
+          "${ANDROID_HOME}/build-tools/35.0.0/apksigner" verify --verbose Sions-Sanger-Public-20.apk
+          test -s Sions-Sanger-Public-20.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Sions-Sanger-Public-20
+          path: Sions-Sanger-Public-20.apk
+          if-no-files-found: error
