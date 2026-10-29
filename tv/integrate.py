@@ -669,11 +669,17 @@ subprocess.run([sys.executable, str(tv_folder / "icons.py"), str(root)], check=T
 
 # Native private audio storage and player; HTML carries only controls and metadata.
 shutil.copy2(tv_folder / "SionsAudio.java", java_folder / "SionsAudio.java")
-shutil.copy2(tv_folder / "audio-controls.js", assets / "audio-controls.js")
-shutil.copy2(tv_folder / "audio-mini-player.js", assets / "audio-mini-player.js")
+shutil.copy2(tv_folder / "SionsMidi.java", java_folder / "SionsMidi.java")
+for item in ["audio-match.js", "audio-follow.js", "audio-controls.js",
+             "audio-mini-player.js", "note-photo-guide.js"]:
+    shutil.copy2(tv_folder / item, assets / item)
 html = index.read_text(encoding="utf-8")
 html = html.replace("fontSize: config.size};", "fontSize: config.size, openSong: openSong};", 1)
-html = html.replace('</body>', '<script src="audio-controls.js"></script>\n<script src="audio-mini-player.js"></script>\n</body>', 1)
+audio_scripts = "\\n".join('<script src="' + item + '"></script>' for item in [
+    "audio-match.js", "audio-follow.js", "audio-controls.js",
+    "audio-mini-player.js", "note-photo-guide.js"
+])
+html = html.replace("</body>", audio_scripts + "\\n</body>", 1)
 index.write_text(html, encoding="utf-8")
 text = java.read_text(encoding="utf-8")
 text = text.replace("    private SionsTvServer tvServer;", "    private SionsTvServer tvServer;\n    private SionsAudio audio;", 1)
