@@ -781,3 +781,39 @@ text = replace_once(text, "    private class AppBridge {",
     "MainActivity.java")
 java.write_text(text, encoding="utf-8")
 print("Komplett ZIP-säkerhetskopia integrerad utan att radera användardata.")
+
+
+# One intelligent import picker instead of separate JSON/music/score/ZIP pickers.
+# Preserve old handlers behind the consolidated UI; do not erase user storage.
+shutil.copy2(tv_folder / "SionsSmartImport.java", java_folder / "SionsSmartImport.java")
+shutil.copy2(tv_folder / "smart-import.js", assets / "smart-import.js")
+html = index.read_text(encoding="utf-8")
+html = replace_once(html, "$('importBtn').onclick=()",
+    """window.sionsSmartImportJson = async function(raw) {
+       try {
+         const entries=JSON.parse(raw);
+         if(!Array.isArray(entries))throw new Error('Fel i importlistan');
+         return await importFiles(entries.map(e=>({
+           name:String(e.name||'import.json'),
+           text:async()=>String(e.text||'')
+         })));
+       } catch(e) {window.alert('JSON kunde inte importeras: '+String(e.message||e));}
+     };
+     $('importBtn').onclick=()""", "index.html")
+html = replace_once(html, "</body>", '<script src="smart-import.js"></script>\n</body>', "index.html")
+index.write_text(html,encoding="utf-8")
+text = java.read_text(encoding="utf-8")
+text = replace_once(text, "    private SionsBackup backup;",
+    "    private SionsBackup backup;\n    private SionsSmartImport smartImport;", "MainActivity.java")
+text = replace_once(text, "        backup = new SionsBackup(this, webView);",
+    "        backup = new SionsBackup(this, webView);\n        smartImport = new SionsSmartImport(this, webView, audio, score, backup);", "MainActivity.java")
+text = replace_once(text, "        super.onActivityResult(requestCode, resultCode, data);",
+    "        super.onActivityResult(requestCode, resultCode, data);\n"
+    "        if(requestCode == SionsSmartImport.PICK) { if(smartImport!=null)smartImport.result(resultCode,data); return; }",
+    "MainActivity.java")
+text = replace_once(text, "    private class AppBridge {",
+    "    private class AppBridge {\n"
+    "        @JavascriptInterface public void smartImport(String catalogue) { if(smartImport!=null)smartImport.pick(catalogue); }\n",
+    "MainActivity.java")
+java.write_text(text,encoding="utf-8")
+print("En gemensam import, komplett ZIP-säkerhetskopia och (?) formatguide.")
