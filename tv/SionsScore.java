@@ -15,9 +15,8 @@ import java.io.*;
 import java.util.*;
 import java.util.zip.*;
 import java.nio.charset.StandardCharsets;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.XMLConstants;
-import org.xml.sax.InputSource;
+import android.util.Xml;
+import org.xmlpull.v1.XmlPullParser;
 
 /**
  * Private sheet-music library. Nothing is bundled or uploaded.
@@ -185,7 +184,10 @@ public final class SionsScore {
             status="Noterna har importerats för sång "+number+".";
         } catch(Exception e) {
             for(File file:newFiles)file.delete();
-            status="Notimport misslyckades: "+e.getMessage();
+            android.util.Log.e("SionsScore","Import för sång "+number+" misslyckades",e);
+            String explanation=e.getMessage();
+            if(explanation==null || explanation.trim().isEmpty()) explanation=e.getClass().getSimpleName();
+            status="Notimport misslyckades: "+explanation;
         } finally { notifyUi(); }
     }
 
@@ -201,22 +203,25 @@ public final class SionsScore {
     }
 
     private static boolean validXml(byte[] bytes) throws Exception {
+        // MusicXML commonly includes a DOCTYPE pointing to the Recordare DTD.
+        // The Android pull parser reads the local XML without fetching that DTD.
+        // Do not enable external entities, and reject any embedded entity declarations.
         String raw=new String(bytes,StandardCharsets.UTF_8);
         if(raw.toUpperCase(Locale.ROOT).contains("<!ENTITY"))
-            throw new IOException("Entitetsdefinitioner är inte tillåtna i MusicXML.");
-        DocumentBuilderFactory factory=DocumentBuilderFactory.newInstance();
-        factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING,true);
-        factory.setFeature("http://xml.org/sax/features/external-general-entities",false);
-        factory.setFeature("http://xml.org/sax/features/external-parameter-entities",false);
-        factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd",false);
-        factory.setXIncludeAware(false);
-        factory.setExpandEntityReferences(false);
-        // MusicXML may legitimately contain a DOCTYPE referencing an external DTD.
-        // External DTD/entity loading is disabled, and entity definitions are rejected above.
-        javax.xml.parsers.DocumentBuilder builder=factory.newDocumentBuilder();
-        builder.setEntityResolver((publicId,systemId)->new InputSource(new StringReader("")));
-        String name=builder.parse(new ByteArrayInputStream(bytes)).getDocumentElement().getNodeName();
-        return "score-partwise".equals(name) || "score-timewise".equals(name);
+            throw new IOException("MusicXML innehåller otillåtna entitetsdefinitioner.");
+        XmlPullParser parser=Xml.newPullParser();
+        parser.setInput(new ByteArrayInputStream(bytes),null);
+        boolean foundRoot=false;
+        int event;
+        while((event=parser.next())!=XmlPullParser.END_DOCUMENT){
+            if(event==XmlPullParser.START_TAG && !foundRoot){
+                String root=parser.getName();
+                if(!"score-partwise".equals(root) && !"score-timewise".equals(root))
+                    return false;
+                foundRoot=true;
+            }
+        }
+        return foundRoot;
     }
 
     private static byte[] unzipMusicXml(InputStream stream) throws Exception {
@@ -230,7 +235,7 @@ public final class SionsScore {
                 String name=entry.getName();
                 if(entry.isDirectory()||name.startsWith("/")||name.contains("..")){zip.closeEntry();continue;}
                 String lower=name.toLowerCase(Locale.ROOT);
-                if(lower.equals("meta-inf/container.xml") || (lower.endsWith(".xml") && !lower.startsWith("meta-inf/"))) {
+                if(lower.equals("meta-inf/container.xml") || ((lower.endsWith(".xml") || lower.endsWith(".musicxml")) && !lower.startsWith("meta-inf/"))) {
                     byte[] bytes=limited(zip,8*1024*1024);
                     total+=bytes.length;
                     if(total>16*1024*1024)throw new IOException("MXL har för mycket uppackat innehåll.");
