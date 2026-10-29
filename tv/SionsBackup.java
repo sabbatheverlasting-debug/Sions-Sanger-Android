@@ -44,6 +44,14 @@ public final class SionsBackup {
             });
         }catch(Exception e){say("Säkerhetskopian kunde inte förberedas.");}
     }
+    /** Smart importer recognizes complete backup ZIPs and restores directly. */
+    public void importSmart(Uri uri){
+        if(uri==null||busy)return;
+        busy=true;
+        new Thread(()->{try{read(uri);}
+            catch(Exception e){say("Återställningen avbröts: "+shortError(e));}
+            finally{busy=false;}},"sions-smart-backup").start();
+    }
     public void importBackup(){
         if(busy)return;
         main.post(()->{
