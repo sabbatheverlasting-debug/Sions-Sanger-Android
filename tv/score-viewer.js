@@ -12,7 +12,9 @@
     var current='', mode='text', page=0, count=0, zoom=1, lastSource='',generation=0,osmd=null;
     var css=document.createElement('style');
     css.textContent=[
-      '#sions-score-tabs{display:flex;gap:6px;align-items:center;justify-content:center;padding:5px 8px;background:var(--paper,#fcf8ed);border-bottom:1px solid #ddcfb7;position:sticky;top:0;z-index:15}',
+      '#sions-score-tabs{display:flex;gap:5px;align-items:center;justify-content:center;flex-wrap:wrap;padding:5px 8px;background:var(--paper,#fcf8ed);border-bottom:1px solid #ddcfb7;position:relative;top:auto;z-index:15;flex:0 0 auto}',
+      '#sions-score-tabs #sions-reader-mode{margin-left:8px;flex:0 0 auto}',
+      '@media(max-width:360px){#sions-score-tabs{gap:3px;padding:4px}#sions-score-tabs button{padding:4px 7px!important;font-size:11px!important}#sions-score-tabs #sions-reader-mode{margin-left:1px}}',
       '#sions-score-tabs button{min-height:34px;border:1px solid #c6ac77;border-radius:10px;padding:5px 12px;background:#f6edda;color:#193956;font:700 13px system-ui}',
       '#sions-score-tabs button[aria-pressed="true"]{background:#193b56;color:#fff4d5}',
       '#sions-score-viewer{background:#f8f4ec;color:#152c42;height:calc(100dvh - 150px);min-height:280px;display:flex;flex-direction:column;overflow:hidden}',
@@ -36,6 +38,7 @@
     tabs.innerHTML='<button type="button" id="sions-show-text" aria-pressed="true">📖 Text</button>'+
       '<button type="button" id="sions-show-scores" aria-pressed="false">🎼 Noter</button>';
     root.insertBefore(tabs,body);
+    window.dispatchEvent(new Event('sions-view-menu-ready'));
 
     var viewer=document.createElement('section');
     viewer.id='sions-score-viewer';viewer.hidden=true;viewer.setAttribute('aria-label','Notvisning');
@@ -69,6 +72,8 @@
       $('show-scores').setAttribute('aria-pressed',String(mode==='notes'));
       body.style.display=mode==='notes'?'none':'';
       viewer.hidden=mode!=='notes';
+      var readerMode=document.getElementById('sions-reader-mode');
+      if(readerMode)readerMode.hidden=mode==='notes';
       var info=scoreInfo(current);
       count=Number(info.count)||0;
       page=Math.max(0,Math.min(count-1,page));
