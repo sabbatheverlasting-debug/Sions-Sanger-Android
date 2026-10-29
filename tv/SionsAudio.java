@@ -40,20 +40,36 @@ public final class SionsAudio {
   String name=new File(original).getName();
   int dot=name.lastIndexOf('.');if(dot<0||!isAudio(name))throw new IOException("Unsupported audio file");
   String stem=name.substring(0,dot),ext=name.substring(dot).toLowerCase(Locale.ROOT);
-  Matcher m=Pattern.compile("^(\\d+)([a-zA-Z]?)(?:[.․ _-]+(.*))?$").matcher(stem);
+  // Recognize explicit song-number prefixes, including "Sions Sånger 055".
+  // Do not interpret arbitrary digits in the middle of a filename as a song.
+  Matcher m=Pattern.compile(
+      "^(?:(?:sions?[-_. ]*(?:sånger|sanger|songs)|ss)[-_. ]*(?:(?:nr|nummer|no)\\.?[-_. ]*)?|(?:sång|sang|psalm|hymn|nr|nummer|no)[ .:#_-]*)?0*(\\d{1,4})([a-zA-Z]?)(?=$|[\\s._):\\]-])(?:[\\s._):\\]-]+(.*))?$",
+      Pattern.CASE_INSENSITIVE|Pattern.UNICODE_CASE).matcher(stem);
   boolean numbered=m.matches();
-  String number=!forced.isEmpty()?forced:(numbered?Integer.toString(Integer.parseInt(m.group(1)))+m.group(2).toLowerCase(Locale.ROOT):"unassigned:"+java.util.UUID.randomUUID().toString());
+  String guessed=numbered?Integer.toString(Integer.parseInt(m.group(1)))+m.group(2).toLowerCase(Locale.ROOT):"";
   String title=(numbered&&m.group(3)!=null&&!m.group(3).isEmpty()?m.group(3):stem).replace('_',' ').trim();
+  String number=!forced.isEmpty()?forced:guessed;
   File temp=File.createTempFile("import-",".tmp",folder);long bytes=0;
   try(OutputStream out=new FileOutputStream(temp)){byte[] b=new byte[32768];int n;while((n=in.read(b))!=-1){bytes+=n;if(bytes>100L*1024*1024)throw new IOException("Ljudfilen är för stor");out.write(b,0,n);}}catch(Exception e){temp.delete();throw e;}
   if(bytes==0){temp.delete();throw new IOException("Tom ljudfil");}
   File target=new File(folder,java.util.UUID.randomUUID()+ext);
   if(!temp.renameTo(target)){temp.delete();throw new IOException("Kunde inte spara ljudet");}
-  synchronized(this){JSONObject index=index();JSONObject old=index.optJSONObject(number);JSONObject item=new JSONObject().put("number",number).put("title",title).put("file",target.getName());index.put(number,item);if(!prefs.edit().putString("index",index.toString()).remove("cues-"+number).commit()){target.delete();throw new IOException("Kunde inte spara registret");}}
+  synchronized(this){
+   JSONObject index=index();
+   // Never silently replace an earlier audio link on bulk import.
+   // Conflicts remain available for explicit user review and manual linking.
+   if(number.isEmpty()||index.optJSONObject(number)!=null)number="unassigned:"+java.util.UUID.randomUUID();
+   JSONObject item=new JSONObject().put("number",number).put("title",title)
+     .put("originalName",name).put("file",target.getName());
+   index.put(number,item);
+   if(!prefs.edit().putString("index",index.toString()).commit()){
+    target.delete();throw new IOException("Kunde inte spara registret");
+   }
+  }
   return true;
  }
  private synchronized JSONObject index(){try{return new JSONObject(prefs.getString("index","{}"));}catch(Exception e){return new JSONObject();}}
- public void assign(String number,String source){if(!number.matches("\\d+[a-z]?"))return;synchronized(this){try{JSONObject idx=index(),item=idx.optJSONObject(source);if(item==null)return;JSONObject copy=new JSONObject(item.toString()).put("number",number);idx.put(number,copy);prefs.edit().putString("index",idx.toString()).remove("cues-"+number).apply();}catch(Exception ignored){}}}
+ public void assign(String number,String source){if(!number.matches("\\d+[a-z]?"))return;synchronized(this){try{JSONObject idx=index(),item=idx.optJSONObject(source);if(item==null)return;JSONObject copy=new JSONObject(item.toString()).put("number",number);idx.put(number,copy);if(source.startsWith("unassigned:"))idx.remove(source);prefs.edit().putString("index",idx.toString()).remove("cues-"+number).apply();}catch(Exception ignored){}}}
  public String list(){return index().toString();}
  public String status(){try{return new JSONObject().put("targetTv",targetTv).put("number",current).put("playing",playing).put("ready",ready).put("position",position/1000.0).put("duration",duration/1000.0).put("error",error).put("busy",busy).put("importStatus",importStatus).toString();}catch(Exception e){return "{}";}}
  public void play(String number){ui.post(()->{error="";JSONObject item=index().optJSONObject(number);if(item==null){error="Importera ljudet till den här sången först";return;}try{if(player!=null&&ready&&current.equals(number)){player.start();playing=true;publishAudio();return;}release();int ticket=++generation;current=number;position=0;duration=0;player=new MediaPlayer();MediaPlayer p=player;p.setDataSource(new File(folder,item.getString("file")).getAbsolutePath());p.setOnPreparedListener(mp->{if(ticket!=generation)return;ready=true;duration=mp.getDuration();mp.setVolume(targetTv?0f:1f,targetTv?0f:1f);mp.start();playing=true;});p.setOnCompletionListener(mp->{playing=false;position=duration;});p.setOnErrorListener((mp,what,extra)->{error="Ljudfilen kunde inte spelas. Prova MP3-versionen.";playing=false;ready=false;return true;});p.prepareAsync();}catch(Exception e){error="Kunde inte öppna ljudfilen";release();}});}
