@@ -14,6 +14,7 @@
     css.textContent=[
       '#sions-score-tabs{display:flex;gap:5px;align-items:center;justify-content:center;flex-wrap:wrap;padding:5px 8px;background:var(--paper,#fcf8ed);border-bottom:1px solid #ddcfb7;position:relative;top:auto;z-index:15;flex:0 0 auto}',
       '#sions-score-tabs #sions-reader-mode{margin-left:8px;flex:0 0 auto}',
+      '#sions-score-tabs #sions-reader-mode[hidden]{display:none!important}',
       '@media(max-width:360px){#sions-score-tabs{gap:3px;padding:4px}#sions-score-tabs button{padding:4px 7px!important;font-size:11px!important}#sions-score-tabs #sions-reader-mode{margin-left:1px}}',
       '#sions-score-tabs button{min-height:34px;border:1px solid #c6ac77;border-radius:10px;padding:5px 12px;background:#f6edda;color:#193956;font:700 13px system-ui}',
       '#sions-score-tabs button[aria-pressed="true"]{background:#193b56;color:#fff4d5}',
