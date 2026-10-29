@@ -22,6 +22,7 @@ public final class SionsAudio {
  private final Handler ui=new Handler(Looper.getMainLooper());
  private MediaPlayer player;
  private File midiTemp;
+ private boolean midiTempOrgan;
  private volatile String midiInstrument;
  private volatile String current="",error="",importStatus="";
  private volatile boolean busy,ready;
@@ -78,8 +79,40 @@ public final class SionsAudio {
  public void instrument(String selection){if(!selection.equals("piano")&&!selection.equals("organ"))return; midiInstrument=selection;prefs.edit().putString("midiInstrument",selection).apply();}
  public String list(){return index().toString();}
  public String status(){try{return new JSONObject().put("midiInstrument",midiInstrument).put("targetTv",targetTv).put("number",current).put("playing",playing).put("ready",ready).put("position",position/1000.0).put("duration",duration/1000.0).put("error",error).put("busy",busy).put("importStatus",importStatus).toString();}catch(Exception e){return "{}";}}
- public void play(String number){ui.post(()->{error="";JSONObject item=index().optJSONObject(number);if(item==null){error="Importera ljudet till den här sången först";return;}try{if(player!=null&&ready&&current.equals(number)){player.start();playing=true;publishAudio();return;}release();int ticket=++generation;current=number;position=0;duration=0;player=new MediaPlayer();MediaPlayer p=player;File input=new File(folder,item.getString("file"));boolean isMidi=item.optString("type").equals("midi")||input.getName().matches("(?i).*\\.(mid|midi)$"); if(isMidi){midiTemp=SionsMidi.playbackCopy(input,activity.getCacheDir(),"organ".equals(midiInstrument));input=midiTemp;}p.setDataSource(input.getAbsolutePath());p.setOnPreparedListener(mp->{if(ticket!=generation)return;ready=true;duration=mp.getDuration();mp.setVolume(targetTv?0f:1f,targetTv?0f:1f);mp.start();playing=true;});p.setOnCompletionListener(mp->{playing=false;position=duration;});p.setOnErrorListener((mp,what,extra)->{error="Ljudfilen kunde inte spelas. Prova MP3-versionen.";playing=false;ready=false;return true;});p.prepareAsync();}catch(Exception e){error="Kunde inte öppna ljudfilen";release();}});}
- public void target(boolean enabled){ui.post(()->{targetTv=enabled;prefs.edit().putBoolean("targetTv",enabled).apply();if(player!=null)try{player.setVolume(enabled?0f:1f,enabled?0f:1f);}catch(Exception ignored){}publishAudio();});}
+ public void play(String number){ui.post(()->{
+  error="";JSONObject item=index().optJSONObject(number);
+  if(item==null){error="Importera musik till den här sången först";return;}
+  final boolean midi=item.optString("type").equals("midi")||item.optString("file").matches("(?i).*\\.(mid|midi)$");
+  try{
+   boolean organ="organ".equals(midiInstrument);
+   if(player!=null&&ready&&current.equals(number)&&(!midi||midiTempOrgan==organ)){
+    player.start();playing=true;publishAudio();return;
+   }
+   release();int ticket=++generation;current=number;position=0;duration=0;
+   player=new MediaPlayer();MediaPlayer p=player;
+   File input=new File(folder,item.getString("file"));
+   if(midi){
+    midiTempOrgan=organ;
+    midiTemp=SionsMidi.playbackCopy(input,activity.getCacheDir(),organ);
+    input=midiTemp;
+   }
+   p.setDataSource(input.getAbsolutePath());
+   p.setOnPreparedListener(mp->{
+    if(ticket!=generation)return;
+    ready=true;duration=mp.getDuration();
+    boolean silent=targetTv&&!midi;
+    mp.setVolume(silent?0f:1f,silent?0f:1f);
+    mp.start();playing=true;
+   });
+   p.setOnCompletionListener(mp->{playing=false;position=duration;});
+   p.setOnErrorListener((mp,what,extra)->{
+    error=midi?"MIDI-filen kunde inte spelas på enheten. Kontrollera formatet.":"Ljudfilen kunde inte spelas. Prova MP3-versionen.";
+    playing=false;ready=false;return true;
+   });
+   p.prepareAsync();
+  }catch(Exception e){error=midi?"MIDI-filen kunde inte förberedas.":"Kunde inte öppna ljudfilen";release();}
+ });}
+ public void target(boolean enabled){ui.post(()->{targetTv=enabled;prefs.edit().putBoolean("targetTv",enabled).apply();if(player!=null)try{boolean silent=enabled&&!current.startsWith("midi:");player.setVolume(silent?0f:1f,silent?0f:1f);}catch(Exception ignored){}publishAudio();});}
  private void publishAudio(){try{
   JSONObject item=index().optJSONObject(current);
   Intent i=new Intent("se.churchshow.tvbridge.AUDIO").setComponent(new ComponentName("se.churchshow.tvbridge","se.churchshow.tvbridge.SlideReceiver"));
