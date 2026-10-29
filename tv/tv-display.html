@@ -21,7 +21,10 @@ header strong { font-size:clamp(13px,1.5vw,27px);letter-spacing:.12em;color:#e5c
 #words.long {font-size:clamp(22px,3.2vw,62px)}
 #words.verylong {font-size:clamp(19px,2.45vw,48px)}
 #score {display:none;max-width:92vw;max-height:84vh;object-fit:contain;background:#fff;box-shadow:0 4px 28px #0006}
-body.show-score #score{display:block}
+body.show-score:not(.show-musicxml) #score{display:block}
+#score-xml{display:none;max-width:96vw;max-height:79vh;overflow:auto;background:#fff;padding:12px;border-radius:5px}
+body.show-musicxml #score-xml{display:block}
+body.show-musicxml #words,body.show-musicxml #score{display:none}
 body.show-score #words{display:none}
 body.show-score #title{font-size:clamp(18px,2vw,34px);margin-bottom:1.5vh}
 body.show-score #frame{padding:4vh 2vw 5vh}
@@ -40,7 +43,7 @@ body.blanked #blank {display:block}
 <header><strong>SIONS SÅNGER</strong><span id="number"></span></header>
 <h1 id="title">Sions Sånger</h1>
 <div id="words">Välj en sång i mobilappen</div>
-<img id="score" alt="Notbild för vald sång" />
+<img id="score" alt="Notbild för vald sång" /><div id="score-xml" role="img" aria-label="MusicXML-noter"></div>
 <footer id="section"></footer>
 </div>
 <div id="status" role="status"></div>
@@ -52,7 +55,39 @@ body.blanked #blank {display:block}
 var params=new URLSearchParams(location.search), code=params.get('code')||'';
 var title=document.getElementById('title'),words=document.getElementById('words');
 var number=document.getElementById('number'),section=document.getElementById('section');
-var status=document.getElementById('status'),errors=0,prev='';
+var status=document.getElementById('status'),errors=0,prev='',lastXml='',xmlGeneration=0,xmlRenderer=null,osmdReady=null;
+function ensureOsmd(){
+  if(window.opensheetmusicdisplay)return Promise.resolve();
+  if(osmdReady)return osmdReady;
+  osmdReady=new Promise(function(resolve,reject){
+    var script=document.createElement('script');
+    script.src='/vendor/osmd.js?code='+encodeURIComponent(code);
+    script.onload=resolve;script.onerror=function(){reject(new Error('MusicXML-bibliotek saknas'));};
+    document.head.appendChild(script);
+  });return osmdReady;
+}
+function showMusicXml(data){
+  var url='/scorexml?code='+encodeURIComponent(code)+'&number='+encodeURIComponent(data.scoreNumber);
+  if(lastXml===url)return;
+  lastXml=url;
+  var ticket=++xmlGeneration;
+  var target=document.getElementById('score-xml');
+  target.textContent='Läser noter…';
+  ensureOsmd().then(function(){return fetch(url,{cache:'no-store'});})
+    .then(function(response){if(!response.ok)throw Error('MusicXML saknas');return response.text();})
+    .then(function(xml){
+      if(ticket!==xmlGeneration)return;
+      target.textContent='';
+      xmlRenderer=new opensheetmusicdisplay.OpenSheetMusicDisplay('score-xml',{
+        backend:'svg',autoResize:false,drawTitle:true,drawingParameters:'compacttight'
+      });
+      return xmlRenderer.load(xml).then(function(){
+        if(ticket!==xmlGeneration)return;
+        xmlRenderer.render();
+        target.querySelectorAll('svg').forEach(function(svg){svg.style.width='100%';svg.style.height='auto';});
+      });
+    }).catch(function(e){if(ticket===xmlGeneration)target.textContent='Kunde inte visa MusicXML: '+String(e.message||e);});
+}
 function render(data){
   var signature=JSON.stringify(data);
   if(signature===prev)return;
@@ -64,7 +99,11 @@ function render(data){
   var score=document.getElementById('score');
   var showScore=!!data.scoreMode && /^[1-9][0-9]{0,3}[a-z]?$/.test(String(data.scoreNumber||'')) && Number.isInteger(data.scorePage) && data.scorePage>=0 && data.scorePage<200;
   document.body.classList.toggle('show-score',showScore);
-  if(showScore){
+  var showXml=showScore&&data.scoreFormat==='musicxml';
+  document.body.classList.toggle('show-musicxml',showXml);
+  if(showXml){showMusicXml(data);}
+  else {lastXml='';xmlGeneration++;document.getElementById('score-xml').textContent='';}
+  if(showScore&&!showXml){
     var src='/score?code='+encodeURIComponent(code)+'&number='+encodeURIComponent(data.scoreNumber)+'&page='+data.scorePage;
     if(score.getAttribute('src')!==src)score.setAttribute('src',src);
   } else {score.removeAttribute('src');}
