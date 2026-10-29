@@ -25,8 +25,8 @@
       '#sions-score-viewer .score-empty{padding:28px 17px;text-align:center;font:15px/1.5 system-ui;color:#173452}',
       '#sions-score-viewer .score-alert{padding:6px 10px;text-align:center;font:12px/1.4 system-ui;color:#66502d}',
       '#sions-score-viewer .score-hidden{display:none!important}',
-      '#sions-score-xml{background:#fff;min-width:100%;width:100%;display:block;text-align:left;overflow:visible}',
-      '#sions-score-xml svg{max-width:none!important;height:auto!important}'
+      '#sions-score-xml{background:#fff;width:100%;min-width:0;display:block;text-align:left;overflow:visible;box-sizing:border-box}',
+      '#sions-score-xml svg{max-width:none!important;display:block}'
     ].join('\n'); document.head.appendChild(css);
 
     var tabs=document.createElement('nav');
@@ -46,6 +46,7 @@
        '<button id="sions-score-next" type="button" aria-label="Nästa notsida">▶</button>'+
        '<button id="sions-score-minus" type="button" aria-label="Minska noter">A−</button>'+
        '<button id="sions-score-plus" type="button" aria-label="Förstora noter">A＋</button>'+
+       '<button id="sions-score-fit" type="button" aria-label="Anpassa noter till skärmbredden">Anpassa</button>'+
       '</div>'+
       '<div class="score-alert" id="sions-score-message">Importera egna notbilder eller en PDF till den valda sången.</div>'+
       '<div class="score-canvas" id="sions-score-canvas">'+
@@ -109,9 +110,8 @@
             });
             osmd.load(xml).then(function(){
               if(ticket!==generation)return;
-              osmd.render();
-              $('score-message').textContent='Vektorbaserade noter · skarpa vid förstoring.';
               zoomScore();
+              $('score-message').textContent='Hela notbilden fortsätter nedåt – rulla för att se alla takter.';
             }).catch(function(e){
               if(ticket===generation)$('score-message').textContent='MusicXML kunde inte visas: '+String(e.message||e);
             });
@@ -139,11 +139,19 @@
       $('score-image').style.minWidth='0';
     }
     function zoomScore(){
-      var div=$('score-xml');
-      div.style.width=(100*zoom)+'%';
-      div.querySelectorAll('svg').forEach(function(svg){
-        svg.style.width='100%';svg.style.height='auto';
-      });
+      if(!osmd || mode!=='notes' || scoreInfo(current).mode!=='musicxml')return;
+      var div=$('score-xml'),canvas=$('score-canvas');
+      // OSMD chooses line breaks from its container width. CSS-resizing an already
+      // rendered SVG used to crop staves; recalculate the entire score instead.
+      var baseWidth=Math.max(240,canvas.clientWidth-16);
+      div.style.width=Math.round(baseWidth*zoom)+'px';
+      div.style.maxWidth='none';
+      try {
+        osmd.Zoom=zoom;
+        osmd.render();
+      }catch(e){
+        $('score-message').textContent='Kunde inte rita om noterna: '+String(e.message||e);
+      }
     }
     function changeMode(next){
       var n=number(); if(!n)return;
@@ -172,6 +180,7 @@
     $('score-next').onclick=function(){changePage(1);};
     $('score-minus').onclick=function(){zoom=Math.max(.6,Math.round((zoom-.2)*10)/10);draw();};
     $('score-plus').onclick=function(){zoom=Math.min(4,Math.round((zoom+.2)*10)/10);draw();};
+    $('score-fit').onclick=function(){zoom=1;draw();$('score-canvas').scrollTo(0,0);};
 
     // Two-finger pinch in the scrolling score canvas, with A-/A+ as accessible fallback.
     var pinch=0,initialZoom=1;
@@ -187,14 +196,19 @@
         var size=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,
                             e.touches[0].clientY-e.touches[1].clientY);
         zoom=Math.max(.6,Math.min(4,initialZoom*size/pinch));
-        if(scoreInfo(current).mode==='musicxml')zoomScore();
+        if(scoreInfo(current).mode==='musicxml')$('score-message').textContent='Släpp fingrarna för att anpassa noterna.';
         else $('score-image').style.width=(zoom*100)+'%';
         e.preventDefault();
       }
     },{passive:false});
     $('score-canvas').addEventListener('touchend',function(e){
-      if(e.touches.length<2)pinch=0;
+      if(e.touches.length<2 && pinch){pinch=0;if(scoreInfo(current).mode==='musicxml')zoomScore();}
     },{passive:true});
+    var resizeTimer=null;
+    window.addEventListener('resize',function(){
+      clearTimeout(resizeTimer);
+      resizeTimer=setTimeout(function(){if(mode==='notes'&&osmd)zoomScore();},180);
+    });
 
     // Called from TV controller; the TV server fetches a protected JPEG separately.
     window.sionsScoreTvPayload=function(song){
