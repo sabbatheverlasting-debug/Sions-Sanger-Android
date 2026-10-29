@@ -8,7 +8,7 @@ import sys
 import zipfile
 
 REQUIRED_RIGHTS = ("originalText", "swedishEdition", "melody", "arrangement")
-SONG_TAG = re.compile(r'(<script\\b(?=[^>]*\\bid=["\\\']initialSongs["\\\'])[^>]*>)(.*?)(</script\\s*>)', re.S | re.I)
+SONG_TAG = re.compile(r'(<script[^>]*\bid=["\']initialSongs["\'][^>]*>)(.*?)(</script\s*>)', re.S | re.I)
 
 def verified_songs(manifest, count=20):
     if not isinstance(manifest, dict) or manifest.get("releaseAllowed") is not True or manifest.get("rightsCleared") is not True:
