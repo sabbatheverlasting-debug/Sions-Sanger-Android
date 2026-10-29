@@ -27,6 +27,27 @@
     if (keep.parentElement !== actions) actions.prepend(keep);
   }
 
+  // A JSON section with several distinct lines is the only reliable signal
+  // that a real lyrical line division was supplied. One OCR paragraph is not
+  // silently split into guessed lines, and imported data is never rewritten.
+  function markStructuredLines() {
+    const body = document.getElementById('songBody');
+    const view = window.SionsTvData && window.SionsTvData();
+    const sections = view && view.activeSong && view.activeSong.sections;
+    if (!body || !Array.isArray(sections)) return;
+    const stanzas = body.querySelectorAll('.stanza');
+    stanzas.forEach(function (stanza, index) {
+      const section = sections[index];
+      const lines = section && section.lines;
+      const spans = stanza.querySelectorAll('.verse-line');
+      const reliable = Array.isArray(lines) && lines.length > 1 &&
+        lines.length === spans.length &&
+        lines.every(line => typeof line === 'string' && line.trim().length > 0);
+      if (reliable) stanza.dataset.sionsExplicitLines = 'true';
+      else stanza.removeAttribute('data-sions-explicit-lines');
+    });
+  }
+
   function showMode() {
     const reader = document.getElementById('songScreen');
     if (reader) reader.setAttribute('data-sions-reader-mode', mode);
@@ -62,7 +83,7 @@
 
       for (const [value, title, description] of [
         ['book', 'Bok', 'Bokläge: verserna som löpande stycken i originalsångboken'],
-        ['sing', 'Sång', 'Sångläge: luftigare verser och tydligare avstånd']
+        ['sing', 'Sång', 'Sångläge: korrekta sångrader från importfilen, annars löpande text']
       ]) {
         const button = document.createElement('button');
         button.type = 'button';
@@ -90,6 +111,7 @@
       pending = false;
       toolbar();
       modeControl();
+      markStructuredLines();
     });
   }
 
