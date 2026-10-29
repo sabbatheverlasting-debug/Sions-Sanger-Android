@@ -24,6 +24,18 @@ jobs:
           test -f android-source/app/build.gradle || test -f android-source/app/build.gradle.kts
       - name: Integrera senaste mobil- och TV-förbättringarna
         run: python3 tv/integrate.py android-source
+      - name: Paketera öppen MusicXML-renderare för offlinebruk
+        shell: bash
+        run: |
+          PACKAGE_DIR="$RUNNER_TEMP/sions-osmd"
+          mkdir -p "$PACKAGE_DIR"
+          npm pack opensheetmusicdisplay@0.8.3 --pack-destination "$PACKAGE_DIR" --silent
+          BUNDLE="$PACKAGE_DIR/opensheetmusicdisplay-0.8.3.tgz"
+          test -s "$BUNDLE"
+          tar -xOf "$BUNDLE" package/build/opensheetmusicdisplay.min.js > android-source/app/src/main/assets/opensheetmusicdisplay.min.js
+          test -s android-source/app/src/main/assets/opensheetmusicdisplay.min.js
+          cp tv/OSMD-LICENSE.txt android-source/app/src/main/assets/OSMD-LICENSE.txt
+
       - name: Skapa läsanvisning
         shell: bash
         run: |
