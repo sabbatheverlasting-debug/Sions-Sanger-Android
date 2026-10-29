@@ -37,14 +37,16 @@ jobs:
           assert 'buildTypes {' not in text, 'Byggvarianter finns redan – kontroll krävs'
           marker = '    compileOptions {'
           assert text.count(marker) == 1
-          text = text.replace(marker, """    // Android Studio debug is a separate, safe-to-install test application.
-    buildTypes {
-        debug {
-            applicationIdSuffix '.test'
-            versionNameSuffix '-TEST'
-        }
-    }
-""" + marker, 1)
+          patch = [
+              "    // Separate debug test app: safe beside original Sions Sånger.",
+              "    buildTypes {",
+              "        debug {",
+              "            applicationIdSuffix '.test'",
+              "            versionNameSuffix '-TEST'",
+              "        }",
+              "    }",
+          ]
+          text = text.replace(marker, '\\n'.join(patch) + '\\n' + marker, 1)
           gradle.write_text(text, encoding='utf-8')
 
           manifest = Path('android-source/app/src/main/AndroidManifest.xml')
