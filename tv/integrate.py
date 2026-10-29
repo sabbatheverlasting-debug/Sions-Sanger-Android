@@ -15,6 +15,7 @@ gradle = root / "app/build.gradle"
 
 for source, destination in [
     (tv_folder / "tv-controls.js", assets / "tv-controls.js"),
+    (tv_folder / "reader-presentation.js", assets / "reader-presentation.js"),
     (tv_folder / "tv-display.html", assets / "tv-display.html"),
     (tv_folder / "SionsTvServer.java", java_folder / "SionsTvServer.java"),
 ]:
@@ -44,7 +45,7 @@ html = replace_once(
 html = replace_once(
     html,
     "</body>",
-    '<script src="tv-controls.js"></script>\n</body>',
+    '<script src="tv-controls.js"></script>\n<script src="reader-presentation.js"></script>\n</body>',
     "index.html",
 )
 html = replace_once(html,
@@ -415,6 +416,47 @@ html = html.replace("</style>", """
 .song-head h2{font-size:clamp(38px,calc(var(--lyric-size,21px)*1.7),64px);font-weight:650;line-height:1.16;margin:12px auto;max-width:100%;white-space:normal;overflow-wrap:anywhere}
 .song-title{font-size:19px;line-height:1.3}
 </style>""", 1)
+
+# Appearance modes preserve every imported word, including original repetition
+# signs such as :-:. Book mode follows the printed book's flowing paragraphs,
+# whereas song mode adds clear spacing without guessing at poetic line breaks.
+html = html.replace("</style>", """
+#sions-reader-mode{
+  display:inline-flex;align-items:center;gap:2px;padding:2px;
+  border:1px solid #d4bd92;border-radius:9px;
+  background:rgba(248,235,207,.65);font-family:system-ui,sans-serif;
+}
+#sions-reader-mode button{
+  border:0;border-radius:7px;background:transparent;color:#23435d;
+  padding:5px 9px;min-height:27px;min-width:43px;cursor:pointer;
+  font:600 12px system-ui,sans-serif;
+}
+#sions-reader-mode button.active{
+  background:#17334d;color:#fff;box-shadow:0 1px 3px #142d4440;
+}
+#songScreen .song-utility-strip{
+  display:flex;justify-content:flex-end!important;align-items:center!important;
+  margin:0 12px 4px!important;padding:0!important;min-height:29px!important;
+}
+#songScreen .stanza-text,#songScreen .verse-line{
+  white-space:normal;word-break:normal;overflow-wrap:break-word;
+  text-align:left;
+}
+#songScreen[data-sions-reader-mode="book"] .stanza-text,
+#songScreen[data-sions-reader-mode="book"] .verse-line{line-height:1.35!important}
+#songScreen[data-sions-reader-mode="book"] .stanza{margin-bottom:8px!important}
+#songScreen[data-sions-reader-mode="sing"] .stanza-text,
+#songScreen[data-sions-reader-mode="sing"] .verse-line{line-height:1.58!important}
+#songScreen[data-sions-reader-mode="sing"] .stanza{margin-bottom:18px!important}
+@media(max-width:810px){
+  #songScreen .song-inner>.small-toolbar{display:none!important}
+  #songScreen .song-top .song-actions>.small-toolbar{
+    display:flex!important;align-items:center!important;gap:2px!important;
+    flex:0 0 auto!important;white-space:nowrap;
+  }
+}
+</style>""", 1)
+
 index.write_text(html, encoding="utf-8")
 
 text = java.read_text(encoding="utf-8")
