@@ -46,7 +46,7 @@ jobs:
               "        }",
               "    }",
           ]
-          text = text.replace(marker, '\\n'.join(patch) + '\\n' + marker, 1)
+          text = text.replace(marker, '\n'.join(patch) + '\n' + marker, 1)
           gradle.write_text(text, encoding='utf-8')
 
           manifest = Path('android-source/app/src/main/AndroidManifest.xml')
@@ -62,6 +62,18 @@ jobs:
                   '<resources><string name="app_name">' + escape(label) +
                   '</string></resources>\n', encoding='utf-8')
           PYTEST
+      - name: Kontrollera att Gradle och testpaketet är korrekt
+        shell: bash
+        run: |
+          python3 - <<'PYCHECK'
+          from pathlib import Path
+          s=Path('android-source/app/build.gradle').read_text(encoding='utf-8')
+          assert "\\n" not in s, 'Felaktiga bokstavliga radbrytningar i Gradle-filen'
+          assert "buildTypes {" in s and "applicationIdSuffix '.test'" in s
+          assert "// Separate debug test app:" in s
+          assert s.count("{")==s.count("}"), 'Obalanserade klamrar'
+          print('PASS: Gradle-syntax och separat test-app kontrollerade')
+          PYCHECK
       - name: Paketera öppen MusicXML-renderare för offlinebruk
         shell: bash
         run: |
@@ -74,6 +86,24 @@ jobs:
           test -s android-source/app/src/main/assets/opensheetmusicdisplay.min.js
           cp tv/OSMD-LICENSE.txt android-source/app/src/main/assets/OSMD-LICENSE.txt
 
+      - name: Installera Java 17 för verkligt Android-bygge
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Installera Android SDK
+        uses: android-actions/setup-android@v4
+      - name: Installera Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+      - name: Installera Android API 35
+        run: sdkmanager 'platforms;android-35' 'build-tools;35.0.0'
+      - name: Kontrollera att Android Studio-testappen verkligen går att bygga
+        run: |
+          gradle -p android-source --no-daemon :app:assembleDebug
+          test -s android-source/app/build/outputs/apk/debug/app-debug.apk
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging android-source/app/build/outputs/apk/debug/app-debug.apk | grep -F "package: name='se.sionssanger.app.test'"
       - name: Skapa läsanvisning
         shell: bash
         run: |
