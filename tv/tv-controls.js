@@ -32,6 +32,8 @@
         font: Math.max(75, Math.min(135, 100 + ((Number(data().fontSize) || 21) - 21) * ((Number(data().fontSize) || 21) < 21 ? 25 / 6 : 2.5))),
         blank: blank
       };
+      var scoreState=typeof window.sionsScoreTvPayload==='function'?window.sionsScoreTvPayload(selected):null;
+      if(scoreState)Object.assign(state,scoreState);
       try { bridge.tvUpdate(JSON.stringify(state)); }
       catch (e) { setMessage('TV-anslutningen svarar inte.'); }
       updateDisplay();
@@ -44,6 +46,10 @@
     }
     function next(delta) {
       if (!selected) return;
+      var notes=typeof window.sionsScoreTvPayload==='function'?window.sionsScoreTvPayload(selected):null;
+      if(notes&&notes.scoreMode&&typeof window.sionsScoreNextPage==='function'){
+        window.sionsScoreNextPage(delta);return;
+      }
       at = Math.max(0, Math.min(selected.sections.length - 1, at + delta));
       blank = false;
       sync();
@@ -201,12 +207,13 @@
     function updateDisplay() {
       var p = part();
       $('stv-song').textContent = selected ? String(number(selected)) + '. ' + selected.title : 'Välj en sång';
-      $('stv-verse').textContent = p ? label(p) + '  ·  ' + (at + 1) + ' av ' + selected.sections.length : '';
-      $('stv-prev').disabled = !selected || at === 0;
-      $('stv-next').disabled = !selected || at === selected.sections.length - 1;
+      var noteState=selected&&typeof window.sionsScoreTvPayload==='function'?window.sionsScoreTvPayload(selected):null;
+      $('stv-verse').textContent = noteState ? 'Noter · sida '+(noteState.scorePage+1)+' av '+noteState.scoreCount : p ? label(p) + '  ·  ' + (at + 1) + ' av ' + selected.sections.length : '';
+      $('stv-prev').disabled = noteState ? noteState.scorePage===0 : !selected || at === 0;
+      $('stv-next').disabled = noteState ? noteState.scorePage>=noteState.scoreCount-1 : !selected || at === selected.sections.length - 1;
       $('stv-blank').textContent = blank ? 'Visa text igen' : 'Svart TV-bild';
       $('stv-mtitle').textContent = selected ? selected.title : 'Sions Sånger';
-      $('stv-mwords').textContent = p ? p.lines.join('\n') : 'Välj en sång på mobilen';
+      $('stv-mwords').textContent = noteState ? 'Notbild sida '+(noteState.scorePage+1)+' av '+noteState.scoreCount+' visas på TV.' : p ? p.lines.join('\n') : 'Välj en sång på mobilen';
       $('stv-mwords').className = p && p.lines.join(' ').length > 125 ? 'compact' : '';
       $('stv-mlabel').textContent = p ? label(p) + ' · ' + (at + 1) + '/' + selected.sections.length : '';
       mirror.className = theme;
@@ -309,6 +316,7 @@
       decorateReader();
     }
     window.sionsTvShowVerse = showVerse;
+    window.sionsTvRefresh=function(){if(selected)sync();};
     window.sionsTvSelection = function() { return selected ? {song:selected,index:at} : null; };
     window.sionsTvNextVerse = function(delta) {
       var active = data().activeSong;
