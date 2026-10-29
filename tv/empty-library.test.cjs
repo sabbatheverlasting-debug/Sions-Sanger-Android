@@ -66,6 +66,28 @@ async function open(imported){
  fixedTools.querySelectorAll('button')[1].click();
  assert(fixedTools.isConnected,'A+ keeps its original click handler after relocating');
 
+ // Reopening a song previously stacked multiple working A−/A+ pairs.
+ w.requestAnimationFrame=(callback)=>w.setTimeout(callback,0);
+ w.eval(fs.readFileSync('tv/reader-presentation.js','utf8'));
+ await new Promise(resolve=>setTimeout(resolve,25));
+ assert.equal(d.querySelectorAll('#songScreen .song-top .song-actions > .small-toolbar').length,1,
+   'There must be exactly one fixed font-size toolbar');
+ assert.equal(d.getElementById('sions-reader-mode').querySelectorAll('button').length,2,
+   'The reader has one Book/Song display switcher');
+ assert.equal(d.getElementById('songScreen').dataset.sionsReaderMode,'book','Book view is the default');
+ const textBefore=d.getElementById('songBody').textContent;
+ d.querySelector('#sions-reader-mode [data-mode="sing"]').click();
+ assert.equal(d.getElementById('songScreen').dataset.sionsReaderMode,'sing','Song view can be chosen');
+ assert.equal(w.localStorage.getItem('sions-reader-mode-v1'),'sing','Reader mode choice persists');
+ assert.equal(d.getElementById('songBody').textContent,textBefore,'View switching never rewrites hymn text');
+ d.querySelector('.song-row').click();
+ await new Promise(resolve=>setTimeout(resolve,40));
+ assert.equal(d.querySelectorAll('#songScreen .song-top .song-actions > .small-toolbar').length,1,
+   'Reopening a song must not add more font-size controls');
+ assert.equal(d.querySelectorAll('#sions-reader-mode button').length,2,
+   'Reopening a song must not duplicate display switchers');
+
+
  assert.equal(d.querySelectorAll('#stv-reader-tools,#stv-reader-show,#stv-reader-next').length,0,
    'The redundant in-song TV controls are removed, so there is only one reader TV button');
  const topTv=d.getElementById('sions-tv-shortcut');
