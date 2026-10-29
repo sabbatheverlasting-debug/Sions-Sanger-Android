@@ -20,6 +20,11 @@ header strong { font-size:clamp(13px,1.5vw,27px);letter-spacing:.12em;color:#e5c
 #words { white-space:pre-line;overflow-wrap:break-word; font-size:clamp(26px,4.15vw,86px);font-weight:500;line-height:1.28;max-width:96%;max-height:62vh;overflow:hidden;text-shadow:0 2px 12px rgba(0,0,0,.24); }
 #words.long {font-size:clamp(22px,3.2vw,62px)}
 #words.verylong {font-size:clamp(19px,2.45vw,48px)}
+#score {display:none;max-width:92vw;max-height:84vh;object-fit:contain;background:#fff;box-shadow:0 4px 28px #0006}
+body.show-score #score{display:block}
+body.show-score #words{display:none}
+body.show-score #title{font-size:clamp(18px,2vw,34px);margin-bottom:1.5vh}
+body.show-score #frame{padding:4vh 2vw 5vh}
 .cream #words { text-shadow:none }
 footer {position:absolute;bottom:3vh;font:clamp(13px,1.35vw,24px) system-ui,-apple-system,sans-serif;letter-spacing:.04em;opacity:.7 }
 #status {display:none;position:absolute;top:12vh;left:12vw;right:12vw;color:#fff;background:#963f35;border-radius:14px;padding:16px;font:18px system-ui;text-align:center }
@@ -35,6 +40,7 @@ body.blanked #blank {display:block}
 <header><strong>SIONS SÅNGER</strong><span id="number"></span></header>
 <h1 id="title">Sions Sånger</h1>
 <div id="words">Välj en sång i mobilappen</div>
+<img id="score" alt="Notbild för vald sång" />
 <footer id="section"></footer>
 </div>
 <div id="status" role="status"></div>
@@ -55,6 +61,13 @@ function render(data){
   title.textContent=data.title||'Sions Sånger';
   var lines=Array.isArray(data.lines)?data.lines.map(function(x){return String(x)}):[];
   var joined=lines.join('\n');
+  var score=document.getElementById('score');
+  var showScore=!!data.scoreMode && /^[1-9][0-9]{0,3}[a-z]?$/.test(String(data.scoreNumber||'')) && Number.isInteger(data.scorePage) && data.scorePage>=0 && data.scorePage<200;
+  document.body.classList.toggle('show-score',showScore);
+  if(showScore){
+    var src='/score?code='+encodeURIComponent(code)+'&number='+encodeURIComponent(data.scoreNumber)+'&page='+data.scorePage;
+    if(score.getAttribute('src')!==src)score.setAttribute('src',src);
+  } else {score.removeAttribute('src');}
   words.textContent=joined;
   words.className=joined.length>190?'verylong':joined.length>110?'long':'';
   var scale=Math.max(75,Math.min(135,Number(data.font)||100))/100;
@@ -62,7 +75,8 @@ function render(data){
   words.style.fontSize=(base*scale)+'px';
   var nr=data.number==null?'':'SÅNG '+data.number;
   number.textContent=nr;
-  section.textContent=(data.section||'')+(data.total?'  ·  '+(Number(data.index)+1)+' av '+data.total:'');
+  section.textContent=showScore?'Noter · sida '+(Number(data.scorePage)+1)+' av '+Number(data.scoreCount||1):
+    (data.section||'')+(data.total?'  ·  '+(Number(data.index)+1)+' av '+data.total:'');
 }
 function poll(){
   fetch('/state?code='+encodeURIComponent(code),{cache:'no-store'})
