@@ -95,7 +95,7 @@ public final class TvLink implements Application.ActivityLifecycleCallbacks {
   try{
    JSONObject data=new JSONObject(current.toString());
    List<String> pages=data.optBoolean("wholeVerse")?java.util.Collections.singletonList(data.optString("text")):chunks(data.optString("text"));page=Math.min(page,pages.size()-1);
-   data.put("text",pages.get(page));data.put("blank",blank||data.optBoolean("blank",false));
+   if(!data.has("source"))data.put("source","Sions Sånger");data.put("text",pages.get(page));data.put("blank",blank||data.optBoolean("blank",false));
    if(pages.size()>1)data.put("label",data.optString("label")+" · TV "+(page+1)+"/"+pages.size());
    Intent intent=new Intent("se.churchshow.tvbridge.SLIDE").setComponent(new ComponentName("se.churchshow.tvbridge","se.churchshow.tvbridge.SlideReceiver"));
    intent.putExtra("slide",data.toString());if(jpeg!=null)intent.putExtra("jpeg",jpeg);
