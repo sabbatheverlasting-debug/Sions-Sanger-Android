@@ -14,7 +14,7 @@ class TestPublicRelease(unittest.TestCase):
 
     def test_replaces_all_existing_bundled_songs(self):
         html = '<script id="initialSongs" type="application/json">{"songs":[{"title":"protected"}]}</script>'
-        songs = [{"id":"7", "title":"Nu tacken Gud, allt folk", "verses":["Här är en hel vers\\nPå en ny rad"], "authors":["M. Rinckart"]}]
+        songs = [{"id":"7", "title":"Nu tacken Gud, allt folk", "verses":["Här är en hel vers\nPå en ny rad"], "authors":["M. Rinckart"]}]
         result, n = replace_embedded_songs(html, songs)
         self.assertEqual(n, 1)
         entry = json.loads(SONG_TAG.search(result).group(2))["songs"][0]
@@ -28,7 +28,7 @@ class TestPublicRelease(unittest.TestCase):
 
     def test_cannot_clear_without_evidence(self):
         m = {"releaseAllowed": True, "rightsCleared": True, "songs": [{
-            "id": "7", "title": "Nu tacken Gud", "verses": ["Rad 1\\nRad 2"],
+            "id": "7", "title": "Nu tacken Gud", "verses": ["Rad 1\nRad 2"],
             "releaseAllowed": True, "rights": {k: "cleared" for k in ("originalText","swedishEdition","melody","arrangement")}
         }]}
         with self.assertRaisesRegex(ValueError, "underlag"):
