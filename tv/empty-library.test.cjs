@@ -98,6 +98,21 @@ async function open(imported){
    'Reopening a song must not add more font-size controls');
  assert.equal(d.querySelectorAll('#sions-reader-mode button').length,2,
    'Reopening a song must not duplicate display switchers');
+ 
+ // Regression: repeatedly open the SAME hymn while switching Book/Song modes.
+ // The fixed header must never accumulate A-/A+ controls.
+ for (let n=0;n<8;n++){
+   const wanted=n%2===0?'book':'sing';
+   d.querySelector('#sions-reader-mode [data-mode="'+wanted+'"]').click();
+   d.querySelector('.song-row').click();
+   await new Promise(resolve=>setTimeout(resolve,30));
+   assert.equal(d.querySelectorAll('#songScreen .small-toolbar').length,1,
+     'Exactly one A-/A+ toolbar after repeated reopening and mode switching ('+n+')');
+   const buttons=d.querySelectorAll('#songScreen .song-top .song-actions > .small-toolbar button');
+   assert.equal(buttons.length,2,'Exactly one functional font-size pair remains ('+n+')');
+   assert.equal(d.getElementById('songScreen').dataset.sionsReaderMode,wanted,
+     'Bok/Sång selection is preserved after reopening ('+n+')');
+ }
 
 
  assert.equal(d.querySelectorAll('#stv-reader-tools,#stv-reader-show,#stv-reader-next').length,0,
