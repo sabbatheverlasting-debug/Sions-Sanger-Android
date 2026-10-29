@@ -13,6 +13,11 @@ import android.webkit.WebView;
 import org.json.*;
 import java.io.*;
 import java.util.*;
+import java.util.zip.*;
+import java.nio.charset.StandardCharsets;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.XMLConstants;
+import org.xml.sax.InputSource;
 
 /**
  * Private sheet-music library. Nothing is bundled or uploaded.
@@ -47,7 +52,9 @@ public final class SionsScore {
             intent.addCategory(Intent.CATEGORY_OPENABLE);
             intent.setType("*/*");
             intent.putExtra(Intent.EXTRA_MIME_TYPES,
-                new String[]{"image/jpeg", "image/png", "image/webp", "application/pdf"});
+                new String[]{"image/jpeg", "image/png", "image/webp", "application/pdf",
+                    "application/vnd.recordare.musicxml+xml", "application/vnd.recordare.musicxml",
+                    "application/xml", "text/xml", "application/octet-stream"});
             intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
             try { activity.startActivityForResult(intent, PICK); }
             catch (Exception e) { status = "Filväljaren kunde inte öppnas."; notifyUi(); }
@@ -92,6 +99,8 @@ public final class SionsScore {
     private String type(Uri uri) {
         String name = displayName(uri).toLowerCase(Locale.ROOT);
         String mime = activity.getContentResolver().getType(uri);
+        if (name.endsWith(".mxl") || "application/vnd.recordare.musicxml".equals(mime)) return "mxl";
+        if (name.endsWith(".musicxml") || name.endsWith(".xml") || "application/vnd.recordare.musicxml+xml".equals(mime)) return "musicxml";
         if (name.endsWith(".pdf") || "application/pdf".equals(mime)) return "pdf";
         if (name.endsWith(".jpg") || name.endsWith(".jpeg") || name.endsWith(".png")
             || name.endsWith(".webp") || (mime!=null && mime.startsWith("image/"))) return "image";
@@ -101,16 +110,20 @@ public final class SionsScore {
     private void importSelected(String number, List<Uri> uris) {
         ArrayList<File> newFiles = new ArrayList<>();
         try {
-            if (uris.isEmpty() || uris.size()>30) throw new IOException("Välj 1–30 notbilder eller en PDF.");
+            if (uris.isEmpty() || uris.size()>30) throw new IOException("Välj 1–30 bilder, eller en PDF/MusicXML.");
             ArrayList<Source> sources = new ArrayList<>();
             for (Uri uri:uris) {
                 String t=type(uri);
-                if (t.isEmpty()) throw new IOException("Endast PDF, JPG, PNG och WebP stöds.");
+                if (t.isEmpty()) throw new IOException("Endast PDF, JPG, PNG, WebP, MusicXML och MXL stöds.");
                 sources.add(new Source(uri,t));
             }
             if (sources.size()>1) for(Source source:sources)
-                if ("pdf".equals(source.type))
-                    throw new IOException("Importera en PDF åt gången eller flera bilder.");
+                if (!"image".equals(source.type))
+                    throw new IOException("Importera en PDF/MusicXML/MXL åt gången eller flera bilder.");
+            if (sources.size()==1 && ("musicxml".equals(sources.get(0).type) || "mxl".equals(sources.get(0).type))) {
+                importMusicXml(number,sources.get(0),newFiles);
+                return;
+            }
 
             JSONArray entries = new JSONArray();
             int count = 0;
@@ -176,6 +189,114 @@ public final class SionsScore {
         } finally { notifyUi(); }
     }
 
+
+    private static byte[] limited(InputStream in, int maxBytes) throws IOException {
+        ByteArrayOutputStream out=new ByteArrayOutputStream();
+        byte[] buffer=new byte[16384];int n;
+        while((n=in.read(buffer))!=-1) {
+            if(out.size()+n>maxBytes)throw new IOException("MusicXML är för stor (max 8 MB).");
+            out.write(buffer,0,n);
+        }
+        return out.toByteArray();
+    }
+
+    private static boolean validXml(byte[] bytes) throws Exception {
+        DocumentBuilderFactory factory=DocumentBuilderFactory.newInstance();
+        factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING,true);
+        factory.setFeature("http://xml.org/sax/features/external-general-entities",false);
+        factory.setFeature("http://xml.org/sax/features/external-parameter-entities",false);
+        factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd",false);
+        factory.setXIncludeAware(false);
+        factory.setExpandEntityReferences(false);
+        factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD,"");
+        factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_SCHEMA,"");
+        javax.xml.parsers.DocumentBuilder builder=factory.newDocumentBuilder();
+        builder.setEntityResolver((publicId,systemId)->new InputSource(new StringReader("")));
+        String name=builder.parse(new ByteArrayInputStream(bytes)).getDocumentElement().getNodeName();
+        return "score-partwise".equals(name) || "score-timewise".equals(name);
+    }
+
+    private static byte[] unzipMusicXml(InputStream stream) throws Exception {
+        LinkedHashMap<String,byte[]> files=new LinkedHashMap<>();
+        String rootFile="";
+        int total=0,entries=0;
+        try(ZipInputStream zip=new ZipInputStream(new BufferedInputStream(stream))) {
+            ZipEntry entry;
+            while((entry=zip.getNextEntry())!=null) {
+                if(++entries>100)throw new IOException("För många filer i MXL.");
+                String name=entry.getName();
+                if(entry.isDirectory()||name.startsWith("/")||name.contains("..")){zip.closeEntry();continue;}
+                String lower=name.toLowerCase(Locale.ROOT);
+                if(lower.equals("meta-inf/container.xml") || (lower.endsWith(".xml") && !lower.startsWith("meta-inf/"))) {
+                    byte[] bytes=limited(zip,8*1024*1024);
+                    total+=bytes.length;
+                    if(total>16*1024*1024)throw new IOException("MXL har för mycket uppackat innehåll.");
+                    files.put(name,bytes);
+                }
+                zip.closeEntry();
+            }
+        }
+        for(Map.Entry<String,byte[]> file:files.entrySet()) {
+            if(file.getKey().equalsIgnoreCase("META-INF/container.xml")) {
+                String meta=new String(file.getValue(),StandardCharsets.UTF_8);
+                java.util.regex.Matcher matcher=java.util.regex.Pattern.compile(
+                    "<rootfile[^>]*full-path\\s*=\\s*['\"]([^'\"]+)['\"]", java.util.regex.Pattern.CASE_INSENSITIVE)
+                    .matcher(meta);
+                if(matcher.find())rootFile=matcher.group(1);
+                break;
+            }
+        }
+        if(!rootFile.isEmpty()) {
+            byte[] primary=files.get(rootFile);
+            if(primary!=null && validXml(primary))return primary;
+        }
+        for(Map.Entry<String,byte[]> file:files.entrySet()) {
+            if(file.getKey().toLowerCase(Locale.ROOT).startsWith("meta-inf/"))continue;
+            if(validXml(file.getValue()))return file.getValue();
+        }
+        throw new IOException("MXL saknar läsbar MusicXML-notfil.");
+    }
+
+    private void importMusicXml(String number,Source source,List<File> newFiles) throws Exception {
+        byte[] bytes;
+        try(InputStream in=activity.getContentResolver().openInputStream(source.uri)) {
+            if(in==null)throw new IOException("Kunde inte öppna MusicXML.");
+            bytes="mxl".equals(source.type)?unzipMusicXml(in):limited(in,8*1024*1024);
+        }
+        if(bytes.length<16 || !validXml(bytes))throw new IOException("Filen är inte giltig MusicXML.");
+        File file=new File(directory,UUID.randomUUID()+".musicxml");
+        try(OutputStream out=new FileOutputStream(file)){out.write(bytes);}
+        newFiles.add(file);
+        JSONObject item=new JSONObject().put("file",file.getName()).put("type","musicxml")
+            .put("pages",1).put("name",displayName(source.uri));
+        JSONObject info=new JSONObject().put("mode","musicxml").put("count",1)
+            .put("items",new JSONArray().put(item));
+        synchronized(this) {
+            JSONObject idx=all(),old=idx.optJSONObject(number);
+            idx.put(number,info);
+            if(!prefs.edit().putString("scores",idx.toString()).commit())
+                throw new IOException("Kunde inte spara MusicXML-registret.");
+            if(old!=null)deleteEntries(old);
+        }
+        status="MusicXML har importerats för sång "+number+".";
+    }
+
+    public synchronized String xml(String number) {
+        if(!validNumber(number))return "";
+        try {
+            JSONObject info=all().optJSONObject(number);
+            if(info==null || !"musicxml".equals(info.optString("mode")))return "";
+            JSONArray arr=info.optJSONArray("items");if(arr==null||arr.length()!=1)return "";
+            String name=arr.getJSONObject(0).optString("file");
+            if(!name.matches("[0-9a-fA-F-]{36}\\.musicxml"))return "";
+            File f=new File(directory,name);
+            if(!f.isFile()||f.length()>8*1024*1024)return "";
+            try(InputStream in=new FileInputStream(f)){
+                return new String(limited(in,8*1024*1024),StandardCharsets.UTF_8);
+            }
+        } catch(Exception ex){return "";}
+    }
+
     private void deleteEntries(JSONObject info) {
         JSONArray entries=info.optJSONArray("items");
         if(entries==null)return;
@@ -183,7 +304,7 @@ public final class SionsScore {
             JSONObject x=entries.optJSONObject(i);
             if(x==null)continue;
             String name=x.optString("file");
-            if(name.matches("[0-9a-fA-F-]{36}\\.(pdf|img)"))new File(directory,name).delete();
+            if(name.matches("[0-9a-fA-F-]{36}\\.(pdf|img|musicxml)"))new File(directory,name).delete();
         }
     }
 
