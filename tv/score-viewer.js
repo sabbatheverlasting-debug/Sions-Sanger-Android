@@ -8,7 +8,7 @@
     var root=document.querySelector('#songScreen .song-inner');
     if(!native || typeof native.scoreInfo!=='function' || !body || !root) return;
 
-    var current='', mode='text', page=0, count=0, zoom=1, lastSource='';
+    var current='', mode='text', page=0, count=0, zoom=1, lastSource='',generation=0,osmd=null;
     var css=document.createElement('style');
     css.textContent=[
       '#sions-score-tabs{display:flex;gap:6px;align-items:center;justify-content:center;padding:5px 8px;background:var(--paper,#fcf8ed);border-bottom:1px solid #ddcfb7;position:sticky;top:0;z-index:15}',
@@ -24,7 +24,9 @@
       '#sions-score-viewer .score-canvas img{display:block;margin:0 auto;max-width:none;height:auto;box-shadow:0 2px 12px #0004;background:#fff;user-select:none;-webkit-user-drag:none}',
       '#sions-score-viewer .score-empty{padding:28px 17px;text-align:center;font:15px/1.5 system-ui;color:#173452}',
       '#sions-score-viewer .score-alert{padding:6px 10px;text-align:center;font:12px/1.4 system-ui;color:#66502d}',
-      '#sions-score-viewer .score-hidden{display:none!important}'
+      '#sions-score-viewer .score-hidden{display:none!important}',
+      '#sions-score-xml{background:#fff;min-width:100%;width:100%;display:block;text-align:left;overflow:visible}',
+      '#sions-score-xml svg{max-width:none!important;height:auto!important}'
     ].join('\n'); document.head.appendChild(css);
 
     var tabs=document.createElement('nav');
@@ -49,6 +51,7 @@
       '<div class="score-canvas" id="sions-score-canvas">'+
        '<p class="score-empty" id="sions-score-empty">Inga noter importerade för den här sången.</p>'+
        '<img id="sions-score-image" alt="Notbild" class="score-hidden" />'+
+       '<div id="sions-score-xml" class="score-hidden" aria-label="MusicXML-noter"></div>'+
       '</div>';
     body.insertAdjacentElement('afterend',viewer);
 
@@ -65,7 +68,8 @@
       var info=scoreInfo(current);
       count=Number(info.count)||0;
       page=Math.max(0,Math.min(count-1,page));
-      $('score-pages').textContent=count?(page+1)+' / '+count:'0 sidor';
+      var isXml=info.mode==='musicxml';
+      $('score-pages').textContent=isXml?'MusicXML':count?(page+1)+' / '+count:'0 sidor';
       $('score-prev').disabled=page===0;
       $('score-next').disabled=page>=count-1;
       $('score-remove').disabled=!count;
@@ -75,12 +79,47 @@
       setControls();
       if(mode!=='notes')return;
       if(!count){
+        $('score-xml').classList.add('score-hidden');
         $('score-image').classList.add('score-hidden');
         $('score-empty').classList.remove('score-hidden');
         $('score-empty').textContent='Inga noter för sång '+current+'. Tryck på Importera noter och välj PDF, JPG, PNG eller WebP.';
         return;
       }
       $('score-empty').classList.add('score-hidden');
+      var info=scoreInfo(current);
+      if(info.mode==='musicxml'){
+        $('score-image').classList.add('score-hidden');
+        $('score-xml').classList.remove('score-hidden');
+        var xmlKey='xml:'+current;
+        if(lastSource!==xmlKey){
+          lastSource=xmlKey;
+          var ticket=++generation;
+          $('score-xml').textContent='';
+          $('score-message').textContent='Läser MusicXML och ritar noterna…';
+          if(!window.opensheetmusicdisplay || !window.opensheetmusicdisplay.OpenSheetMusicDisplay){
+            $('score-message').textContent='Notbiblioteket saknas i den här appversionen.';
+            return;
+          }
+          var xml='';
+          try{xml=native.scoreXml(current);}catch(e){}
+          if(!xml){$('score-message').textContent='Kunde inte läsa MusicXML-filen.';return;}
+          try{
+            osmd=new window.opensheetmusicdisplay.OpenSheetMusicDisplay('sions-score-xml',{
+              backend:'svg',autoResize:false,drawTitle:true,drawingParameters:'compacttight'
+            });
+            osmd.load(xml).then(function(){
+              if(ticket!==generation)return;
+              osmd.render();
+              $('score-message').textContent='Vektorbaserade noter · skarpa vid förstoring.';
+              zoomScore();
+            }).catch(function(e){
+              if(ticket===generation)$('score-message').textContent='MusicXML kunde inte visas: '+String(e.message||e);
+            });
+          }catch(e){$('score-message').textContent='MusicXML-fel: '+String(e.message||e);}
+        }else zoomScore();
+        return;
+      }
+      $('score-xml').classList.add('score-hidden');
       var key=current+':'+page;
       if(lastSource!==key){
         var imgdata='';
@@ -99,9 +138,16 @@
       $('score-image').style.width=(100*zoom)+'%';
       $('score-image').style.minWidth='0';
     }
+    function zoomScore(){
+      var div=$('score-xml');
+      div.style.width=(100*zoom)+'%';
+      div.querySelectorAll('svg').forEach(function(svg){
+        svg.style.width='100%';svg.style.height='auto';
+      });
+    }
     function changeMode(next){
       var n=number(); if(!n)return;
-      if(current!==n){current=n;page=0;zoom=1;lastSource='';}
+      if(current!==n){current=n;page=0;zoom=1;lastSource='';generation++;}
       mode=next;
       draw();
       if(mode==='notes'&&typeof window.sionsTvShowVerse==='function')window.sionsTvShowVerse(0);
@@ -112,7 +158,7 @@
     $('score-import').onclick=function(){if(current)native.scorePick(current);};
     $('score-remove').onclick=function(){
       if(current&&count&&confirm('Ta bort alla importerade noter för sång '+current+' från enheten?')){
-        native.scoreRemove(current);page=0;lastSource='';draw();notifyTv();
+        native.scoreRemove(current);page=0;lastSource='';generation++;draw();notifyTv();
       }
     };
     function changePage(delta){
@@ -141,7 +187,8 @@
         var size=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,
                             e.touches[0].clientY-e.touches[1].clientY);
         zoom=Math.max(.6,Math.min(4,initialZoom*size/pinch));
-        $('score-image').style.width=(zoom*100)+'%';
+        if(scoreInfo(current).mode==='musicxml')zoomScore();
+        else $('score-image').style.width=(zoom*100)+'%';
         e.preventDefault();
       }
     },{passive:false});
@@ -152,12 +199,12 @@
     // Called from TV controller; the TV server fetches a protected JPEG separately.
     window.sionsScoreTvPayload=function(song){
       if(mode!=='notes'||!song||String(song.song_number)!==current||!count)return null;
-      return {scoreMode:true,scoreNumber:current,scorePage:page,scoreCount:count};
+      return {scoreMode:true,scoreFormat:scoreInfo(current).mode,scoreNumber:current,scorePage:page,scoreCount:count};
     };
     window.sionsScoreNextPage=function(delta){changePage(delta);};
     window.sionsScoreOpenForSong=function(song){
       if(!song||song.song_number==null)return;
-      current=String(song.song_number);page=0;zoom=1;lastSource='';
+      current=String(song.song_number);page=0;zoom=1;lastSource='';generation++;
       mode='notes';draw();
       if(typeof window.sionsTvShowVerse==='function')window.sionsTvShowVerse(0);
     };
@@ -167,14 +214,14 @@
       var n=number();
       tabs.hidden=!n;
       if(n!==current){
-        current=n;mode='text';page=0;zoom=1;lastSource='';
+        current=n;mode='text';page=0;zoom=1;lastSource='';generation++;
         setControls();
         notifyTv();
       }
     }
     var observer=new MutationObserver(checkSong);
     observer.observe(body,{childList:true,subtree:false});
-    window.addEventListener('sions-score-updated',function(){lastSource='';draw();notifyTv();});
+    window.addEventListener('sions-score-updated',function(){lastSource='';generation++;draw();notifyTv();});
     checkSong();
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);
