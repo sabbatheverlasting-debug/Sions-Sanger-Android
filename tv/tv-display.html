@@ -22,7 +22,8 @@ header strong { font-size:clamp(13px,1.5vw,27px);letter-spacing:.12em;color:#e5c
 #words.verylong {font-size:clamp(19px,2.45vw,48px)}
 #score {display:none;max-width:92vw;max-height:84vh;object-fit:contain;background:#fff;box-shadow:0 4px 28px #0006}
 body.show-score:not(.show-musicxml) #score{display:block}
-#score-xml{display:none;max-width:96vw;max-height:79vh;overflow:auto;background:#fff;padding:12px;border-radius:5px}
+#score-xml{display:none;width:94vw;max-width:94vw;max-height:77vh;min-height:0;overflow:auto;background:#fff;padding:12px;border-radius:5px;box-sizing:border-box;text-align:left}
+#score-xml svg{display:block;max-width:none!important}
 body.show-musicxml #score-xml{display:block}
 body.show-musicxml #words,body.show-musicxml #score{display:none}
 body.show-score #words{display:none}
@@ -79,12 +80,15 @@ function showMusicXml(data){
       if(ticket!==xmlGeneration)return;
       target.textContent='';
       xmlRenderer=new opensheetmusicdisplay.OpenSheetMusicDisplay('score-xml',{
-        backend:'svg',autoResize:false,drawTitle:true,drawingParameters:'compacttight'
+        backend:'svg',autoResize:false,drawTitle:true,drawingParameters:'compacttight',pageFormat:'Endless'
       });
       return xmlRenderer.load(xml).then(function(){
         if(ticket!==xmlGeneration)return;
+        // SVG must keep the dimensions OSMD computed; forcing width:100% clips measures.
+        target.style.width='94vw';
+        xmlRenderer.Zoom=1;
         xmlRenderer.render();
-        target.querySelectorAll('svg').forEach(function(svg){svg.style.width='100%';svg.style.height='auto';});
+        target.scrollTop=0;target.scrollLeft=0;
       });
     }).catch(function(e){if(ticket===xmlGeneration)target.textContent='Kunde inte visa MusicXML: '+String(e.message||e);});
 }
