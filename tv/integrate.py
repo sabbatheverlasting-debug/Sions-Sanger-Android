@@ -457,6 +457,105 @@ html = html.replace("</style>", """
 }
 </style>""", 1)
 
+# Reader refinement (mobile only): maximize lyric space, avoid invented
+# line breaks, and let imported, genuinely distinct lyric lines stand alone
+# in song mode. Never change section.lines, title, authors, repeat signs or audio.
+html = html.replace("</style>", """
+@media(max-width:810px){
+  #songScreen .song-head{
+    padding:3px 9px 0!important;
+  }
+  #songScreen .song-authors{
+    margin:1px auto 2px!important;
+    line-height:1.15!important;
+  }
+  #songScreen .song-utility-strip{
+    justify-content:flex-end!important;
+    align-items:center!important;
+    flex-wrap:wrap!important;
+    gap:4px!important;
+    margin:0 10px 3px!important;
+    padding:0!important;
+    min-height:28px!important;
+  }
+  #songScreen .song-utility-strip>.sau-song-options{
+    flex:0 0 auto!important;
+    margin:0!important;
+  }
+  #songScreen .song-utility-strip>.sau-song-options[open]{
+    flex:1 1 100%!important;
+  }
+  #songScreen .song-utility-strip>.sau-song-options>summary{
+    min-height:27px!important;
+    padding:4px 8px!important;
+    font-size:11px!important;
+    line-height:1.2!important;
+  }
+  #songScreen #sions-reader-mode{
+    flex:0 0 auto!important;
+    padding:1px!important;
+    gap:1px!important;
+  }
+  #songScreen #sions-reader-mode button{
+    min-height:25px!important;
+    min-width:38px!important;
+    padding:3px 7px!important;
+    font-size:11px!important;
+  }
+  #songScreen .lyric-area{
+    width:100%!important;
+    max-width:690px!important;
+    padding:3px 10px 9px!important;
+  }
+  #songScreen .stanza{
+    gap:8px!important;
+    padding-top:0!important;
+    padding-bottom:0!important;
+  }
+  #songScreen .stanza-index{
+    flex:0 0 20px!important;
+    width:20px!important;
+    padding-top:2px!important;
+    text-align:right!important;
+  }
+  #songScreen .stanza-text{
+    min-width:0!important;
+    overflow-wrap:break-word!important;
+    word-break:normal!important;
+  }
+  #songScreen[data-sions-reader-mode="book"] .stanza{
+    margin-bottom:7px!important;
+  }
+  #songScreen[data-sions-reader-mode="book"] .stanza-text,
+  #songScreen[data-sions-reader-mode="book"] .verse-line{
+    line-height:1.30!important;
+  }
+  #songScreen[data-sions-reader-mode="sing"] .stanza{
+    margin-bottom:11px!important;
+  }
+  #songScreen[data-sions-reader-mode="sing"] .stanza-text,
+  #songScreen[data-sions-reader-mode="sing"] .verse-line{
+    line-height:1.38!important;
+  }
+  /* A printed paragraph stays a printed paragraph. A structured imported
+     stanza becomes line-by-line only when its JSON contains distinct lines. */
+  #songScreen[data-sions-reader-mode="book"] .stanza .verse-line,
+  #songScreen[data-sions-reader-mode="sing"] .stanza:not([data-sions-explicit-lines="true"]) .verse-line{
+    display:inline!important;
+    white-space:normal!important;
+  }
+  #songScreen[data-sions-reader-mode="book"] .stanza .verse-line:not(:last-child)::after,
+  #songScreen[data-sions-reader-mode="sing"] .stanza:not([data-sions-explicit-lines="true"]) .verse-line:not(:last-child)::after{
+    content:" ";white-space:pre;
+  }
+  #songScreen[data-sions-reader-mode="sing"] .stanza[data-sions-explicit-lines="true"] .verse-line{
+    display:block!important;
+    white-space:pre-wrap!important;
+    margin:0 0 2px!important;
+  }
+}
+</style>""", 1)
+
 index.write_text(html, encoding="utf-8")
 
 text = java.read_text(encoding="utf-8")
