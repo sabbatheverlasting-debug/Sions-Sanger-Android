@@ -29,8 +29,8 @@ jobs:
         run: |
           PACKAGE_DIR="$RUNNER_TEMP/sions-osmd"
           mkdir -p "$PACKAGE_DIR"
-          npm pack opensheetmusicdisplay@0.8.3 --pack-destination "$PACKAGE_DIR" --silent
-          BUNDLE="$PACKAGE_DIR/opensheetmusicdisplay-0.8.3.tgz"
+          npm pack opensheetmusicdisplay@1.9.9 --pack-destination "$PACKAGE_DIR" --silent
+          BUNDLE="$PACKAGE_DIR/opensheetmusicdisplay-1.9.9.tgz"
           test -s "$BUNDLE"
           tar -xOf "$BUNDLE" package/build/opensheetmusicdisplay.min.js > android-source/app/src/main/assets/opensheetmusicdisplay.min.js
           test -s android-source/app/src/main/assets/opensheetmusicdisplay.min.js
