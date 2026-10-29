@@ -26,7 +26,7 @@
   function time(n){n=Math.max(0,Math.floor(Number(n)||0));return Math.floor(n/60)+':'+String(n%60).padStart(2,'0');}
   function button(text,click){var b=document.createElement('button');b.type='button';b.textContent=text;b.onclick=click;return b;}
   function play(number){if(status.number===number&&status.playing)native.audioPause();else native.audioPlay(number);refresh();}
-  var css=document.createElement('style');css.textContent='.sau-controls{font:14px system-ui;color:var(--ink);padding:10px 18px 6px;text-align:center}.sau-controls button,#sau-catalog button{min-height:40px;border:1px solid #c8aa70;border-radius:9px;background:#f5e7c6;color:#17354d;padding:8px 12px;font:600 14px system-ui;margin:3px}.sau-controls select{max-width:100%;padding:9px;border-radius:8px;margin:7px 0}.sau-controls summary{cursor:pointer;padding:8px}.sau-controls small{display:block;line-height:1.5;opacity:.8}.sau-controls progress{width:90%;max-width:380px;display:block;margin:8px auto}.sau-controls input[type=range]{width:90%;max-width:380px}.sau-follow-label{display:flex!important;align-items:center;gap:8px;text-align:left!important;margin:6px 0!important;cursor:pointer;font-weight:650}.sau-follow-label input{width:20px;height:20px;flex:0 0 20px;accent-color:#1b5a48}.sau-follow-warning{border-left:3px solid #bc8b3b;background:rgba(240,194,113,.12);padding:6px 8px!important;margin:4px 0 6px!important;line-height:1.45!important}.sau-controls details{margin-top:4px}.sau-controls label{display:block}#sau-catalog{position:fixed;inset:0;overflow:auto;z-index:2147483500;background:var(--paper);color:var(--ink);padding:25px 16px 60px;font:16px system-ui}#sau-catalog[hidden]{display:none!important}.sau-track{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 0;border-bottom:1px solid #8c8c8c44}.sau-track span{flex:1}';
+  var css=document.createElement('style');css.textContent='.sau-controls{font:14px system-ui;color:var(--ink);padding:10px 18px 6px;text-align:center}.sau-controls button,#sau-catalog button{min-height:40px;border:1px solid #c8aa70;border-radius:9px;background:#f5e7c6;color:#17354d;padding:8px 12px;font:600 14px system-ui;margin:3px}.sau-controls select{max-width:100%;padding:9px;border-radius:8px;margin:7px 0}.sau-controls summary{cursor:pointer;padding:8px}.sau-controls small{display:block;line-height:1.5;opacity:.8}.sau-controls progress{width:90%;max-width:380px;display:block;margin:8px auto}.sau-controls input[type=range]{width:90%;max-width:380px}.sau-follow-label{display:flex!important;align-items:center;gap:8px;text-align:left!important;margin:6px 0!important;cursor:pointer;font-weight:650}.sau-follow-label input{width:20px;height:20px;flex:0 0 20px;accent-color:#1b5a48}.sau-follow-warning{border-left:3px solid #bc8b3b;background:rgba(240,194,113,.12);padding:6px 8px!important;margin:4px 0 6px!important;line-height:1.45!important}.sau-calibrate{display:flex;flex-wrap:wrap;justify-content:center;gap:4px;border-top:1px solid #d6c19f;margin-top:8px;padding-top:9px}.sau-calibrate>strong{display:block;flex:1 1 100%;font-size:13px}.sau-timing-editor{display:flex;flex-wrap:wrap;justify-content:center;gap:3px;align-items:center;margin:5px auto}.sau-timing-editor label{display:flex;gap:5px;align-items:center;flex:1 1 100%;justify-content:center}.sau-timing-editor input{max-width:100px;min-height:38px;border:1px solid #bfa77a;background:white;border-radius:7px;padding:5px}.sau-timing-editor small{flex:1 1 100%}.sau-controls details{margin-top:4px}.sau-controls label{display:block}#sau-catalog{position:fixed;inset:0;overflow:auto;z-index:2147483500;background:var(--paper);color:var(--ink);padding:25px 16px 60px;font:16px system-ui}#sau-catalog[hidden]{display:none!important}.sau-track{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 0;border-bottom:1px solid #8c8c8c44}.sau-track span{flex:1}';
    css.textContent+='.sau-song-options{margin:0!important;max-width:100%} .sau-song-options>summary{cursor:pointer;list-style:none;min-height:34px;padding:6px 11px;border:1px solid #d4b773;border-radius:9px;background:#f6ead1;color:#283a4c;font:600 12px system-ui} .sau-song-options>summary::-webkit-details-marker{display:none} .sau-song-options[open]{width:100%} .sau-song-options:not([open]) #sau-controls{display:none!important} .sau-song-options #sau-controls{padding:5px 2px!important;margin:0!important} .sau-song-options #sau-controls button{min-height:33px!important;padding:5px 8px!important;margin:2px!important;font-size:12px!important} .sau-song-options #sau-controls summary{padding:4px!important} .sau-song-options #sau-controls input[type=range]{margin:4px!important}';
    css.textContent+='.sau-track{flex-wrap:wrap}.sau-manual-link{display:flex;flex:1 1 100%;gap:7px;align-items:center;flex-wrap:wrap}.sau-manual-link select{flex:1 1 180px;max-width:100%;min-height:39px;border:1px solid #c8aa70;border-radius:8px;padding:7px;color:#17354d;background:#fff}.sau-import-summary{font-weight:650;color:var(--ink);margin:10px 0}';
    document.head.appendChild(css);
@@ -106,7 +106,52 @@
    var tvHelp=document.createElement('small');tvHelp.textContent='Starta mobilbryggan och anslut LG-appen. Om TV:n nekar automatisk uppspelning: tryck Aktivera ljud på TV:n. MP3 rekommenderas för TV.';opts.appendChild(tvHelp);
    var help=document.createElement('small');help.textContent='För exakta TV-versbyten: spela ljudet, markera varje vers och tryck Spara start när den börjar. Utan sparade tider används ungefärliga tider.';opts.appendChild(help);
    opts.appendChild(button('Spara start för vald vers',function(){var sel=selection();if(status.ready&&status.number===number&&sel&&key(sel.song)===number){native.audioCue(number,sel.index,status.position);refresh(true);}else{$('sau-info').textContent='Välj en vers på TV och starta sångens ljud först.';}}));
-   opts.appendChild(button('Rensa versstarter',function(){native.audioClearCues(number);lastCue='';refresh(true);}));
+   // Manual calibration: save the moment a verse begins; optionally advance
+   // to the next verse on TV at the exact same moment, with no extra taps.
+   var calibrate=document.createElement('div');calibrate.className='sau-calibrate';
+   var calibrateTitle=document.createElement('strong');calibrateTitle.textContent='Synkronisera versstarter';calibrate.appendChild(calibrateTitle);
+   calibrate.appendChild(button('Spara start för aktuell vers',function(){
+    var sel=selection(),idx=sel&&key(sel.song)===number?sel.index:0;
+    if(!status.ready||status.number!==number){$('sau-info').textContent='Spela upp denna sång först.';return;}
+    native.audioCue(number,idx,status.position);lastCue='';refresh(true);
+   }));
+   calibrate.appendChild(button('Nästa vers + spara tid',function(){
+    var song=data().activeSong,sel=selection();
+    if(!song||!Array.isArray(song.sections)||!status.ready||status.number!==number){
+     $('sau-info').textContent='Starta den här sångens ljud först.';return;
+    }
+    var idx=sel&&key(sel.song)===number?sel.index:0;
+    var next=Math.min(song.sections.length-1,idx+1);
+    if(next===idx){$('sau-info').textContent='Du är redan på sista versen.';return;}
+    native.audioCue(number,next,status.position);lastCue='';
+    if(window.sionsTvShowVerse)window.sionsTvShowVerse(next);
+    refresh(true);
+   }));
+   var editor=document.createElement('div');editor.className='sau-timing-editor';
+   var editorLabel=document.createElement('label');editorLabel.textContent='Finjustera starttid (sekunder)';
+   var timing=document.createElement('input');timing.type='number';timing.min='0';timing.step='0.1';
+   timing.id='sau-cue-time';timing.setAttribute('aria-label','Vald vers starttid i sekunder');
+   editorLabel.appendChild(timing);editor.appendChild(editorLabel);
+   var selectedInfo=document.createElement('small');selectedInfo.id='sau-selected-verse';editor.appendChild(selectedInfo);
+   function selectedIndex(){var sel=selection();return sel&&key(sel.song)===number?sel.index:0;}
+   function updateTime(delta){
+    var idx=selectedIndex(),c=parse(native.audioCues(number));
+    var val=Number(c[idx]);if(!Number.isFinite(val))val=status.position||0;
+    if(delta===null)val=Number(timing.value);
+    else val+=delta;
+    if(!Number.isFinite(val)||val<0){$('sau-info').textContent='Ange en giltig starttid.';return;}
+    val=Math.max(0,Math.min(val,Math.max(status.duration||val,val)));
+    timing.value=val.toFixed(1);native.audioCue(number,idx,val);lastCue='';refresh(true);
+   }
+   editor.appendChild(button('− 0,5 s',function(){updateTime(-0.5);}));
+   editor.appendChild(button('+ 0,5 s',function(){updateTime(0.5);}));
+   editor.appendChild(button('Spara justerad tid',function(){updateTime(null);}));
+   calibrate.appendChild(editor);opts.appendChild(calibrate);
+   opts.appendChild(button('Rensa versstarter',function(){
+    if(window.confirm('Radera sparade versstarter för denna sång?')){
+     native.audioClearCues(number);lastCue='';refresh(true);
+    }
+   }));
    root.appendChild(opts);
    var followLabel=document.createElement('label'),check=document.createElement('input');
    followLabel.className='sau-follow-label';
@@ -162,6 +207,12 @@
     $('sau-seek').disabled=!same||!status.ready;$('sau-seek').max=String(same?status.duration||1:1);
     if(document.activeElement!==$('sau-seek'))$('sau-seek').value=String(same?status.position:0);
     var cues=parse(native.audioCues(number)),count=Object.keys(cues).length;
+    var selected=selection(),idx=selected&&key(selected.song)===number?selected.index:0;
+    var selectedLabel=$('sau-selected-verse'),timingInput=$('sau-cue-time');
+    if(selectedLabel)selectedLabel.textContent='Vald vers: '+(idx+1)+(Object.prototype.hasOwnProperty.call(cues,String(idx))?' · sparad start '+time(cues[idx]):' · ingen exakt tid sparad');
+    if(timingInput&&document.activeElement!==timingInput){
+     var saved=Number(cues[idx]);timingInput.value=Number.isFinite(saved)&&Object.prototype.hasOwnProperty.call(cues,String(idx))?saved.toFixed(1):(Number(status.position)||0).toFixed(1);
+    }
     $('sau-info').textContent=status.error||(!has?'Ingen musik kopplad':(same?time(status.position)+' / '+time(status.duration)+' · ':'')+count+' versstarter sparade');
     updateFollowInfo(number,cues);
     if(following&&same&&status.ready&&status.playing&&followEngine){
