@@ -640,7 +640,38 @@ common_target.parent.mkdir(parents=True, exist_ok=True)
 shutil.copy2(tv_folder / "TvLink.java", common_target)
 text = java.read_text(encoding="utf-8")
 text = text.replace("setContentView(webView);", "setContentView(webView);\n        se.sabbath.tv.TvLink.attach(this,webView);", 1)
-text = text.replace('if (tvServer != null) tvServer.update(value);', 'if (tvServer != null) tvServer.update(value);\n            try { org.json.JSONObject v=new org.json.JSONObject(value); org.json.JSONArray lines=v.optJSONArray("lines"); StringBuilder words=new StringBuilder(); if(lines!=null)for(int i=0;i<lines.length();i++){if(i>0)words.append("\\n");words.append(lines.optString(i));} org.json.JSONObject slide=new org.json.JSONObject().put("title",v.optString("title")).put("text",words.toString()).put("label",v.optString("section")).put("wholeVerse",true).put("font",v.optDouble("font",100)).put("blank",v.optBoolean("blank")); se.sabbath.tv.TvLink.slide(MainActivity.this,slide.toString()); } catch(Exception ignored){}')
+text = text.replace('if (tvServer != null) tvServer.update(value);', '''if (tvServer != null) tvServer.update(value);
+            try {
+                org.json.JSONObject v = new org.json.JSONObject(value);
+                org.json.JSONArray lines = v.optJSONArray("lines");
+                StringBuilder words = new StringBuilder();
+                if(lines!=null) for(int i=0;i<lines.length();i++){
+                    if(i>0) words.append("\\n");
+                    words.append(lines.optString(i));
+                }
+                org.json.JSONArray people=v.optJSONArray("authors");
+                StringBuilder credits=new StringBuilder();
+                if(people!=null)for(int i=0;i<people.length();i++){
+                    String author=people.optString(i).trim();
+                    if(author.isEmpty())continue;
+                    if(credits.length()>0)credits.append(" • ");
+                    credits.append(author);
+                }
+                org.json.JSONObject slide=new org.json.JSONObject()
+                    .put("source","sions-sanger")
+                    .put("title",v.optString("title"))
+                    .put("songNumber",v.optString("number"))
+                    .put("credits",credits.toString())
+                    .put("verse",v.optString("section"))
+                    .put("verseIndex",v.optInt("index",0)+1)
+                    .put("verseTotal",v.optInt("total",0))
+                    .put("text",words.toString())
+                    .put("label",v.optString("section"))
+                    .put("wholeVerse",true)
+                    .put("font",v.optDouble("font",100))
+                    .put("blank",v.optBoolean("blank"));
+                se.sabbath.tv.TvLink.slide(MainActivity.this,slide.toString());
+            } catch(Exception ignored) {}''')
 java.write_text(text, encoding="utf-8")
 
 # Sions uses its own verse controls instead of the generic text-page menu.
