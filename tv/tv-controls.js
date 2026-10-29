@@ -328,12 +328,20 @@
       // Moving DOM elements preserves their listeners and stored text-size value.
       // A new song may recreate these buttons: always keep only the latest pair.
       var readerRoot=document.querySelector('#songScreen .song-inner');
-      var newest=body&&body.querySelector('.small-toolbar');
-      if(readerRoot&&newest){
-        var older=readerRoot.querySelector(':scope > .small-toolbar');
-        if(older&&older!==newest)older.remove();
-        var actions=readerRoot.querySelector('.song-top .song-actions');
-        if(actions&&newest.parentElement!==actions)actions.prepend(newest);
+      var actions=readerRoot&&readerRoot.querySelector('.song-top .song-actions');
+      // The song renderer creates a fresh toolbar in #songBody for each hymn.
+      // Older moved toolbars used to accumulate in .song-actions because the
+      // previous cleanup only searched direct children of .song-inner.
+      if(actions){
+        var fresh=body&&body.querySelector('.small-toolbar');
+        var old=Array.from(actions.querySelectorAll('.small-toolbar'));
+        var keep=fresh||old[old.length-1]||null;
+        old.forEach(function(toolbar){if(toolbar!==keep)toolbar.remove();});
+        if(keep&&keep.parentElement!==actions)actions.prepend(keep);
+        // Never leave a second toolbar in the scrolling text.
+        if(body)Array.from(body.querySelectorAll('.small-toolbar')).forEach(function(toolbar){
+          if(toolbar!==keep)toolbar.remove();
+        });
       }
       if (!song || !body) return;
       var stanzas = body.querySelectorAll('.stanza');
