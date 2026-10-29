@@ -37,6 +37,19 @@ public final class SionsAudio {
  private final Runnable tick=new Runnable(){public void run(){if(player!=null&&ready)try{position=player.getCurrentPosition();duration=player.getDuration();playing=player.isPlaying();}catch(Exception ignored){}if(System.currentTimeMillis()-lastBroadcast>550){lastBroadcast=System.currentTimeMillis();publishAudio();}ui.postDelayed(this,300);}};
  public void pick(String assigned){ui.post(()->{if(busy)return;importAssign=assigned.matches("\\d+[a-z]?")?assigned:"";Intent i=new Intent(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType("*/*");i.putExtra(Intent.EXTRA_MIME_TYPES,new String[]{"audio/*","audio/midi","audio/x-midi","application/x-midi","application/zip","application/x-zip-compressed","application/octet-stream"});i.putExtra(Intent.EXTRA_ALLOW_MULTIPLE,true);try{activity.startActivityForResult(i,PICK);}catch(Exception e){error="Kunde inte öppna filväljaren";}});}
  public void result(int result,Intent data){if(result!=Activity.RESULT_OK||data==null)return;List<Uri> uris=new ArrayList<>();if(data.getClipData()!=null){for(int n=0;n<data.getClipData().getItemCount();n++)uris.add(data.getClipData().getItemAt(n).getUri());}else if(data.getData()!=null)uris.add(data.getData());if(busy)return;final String assigned=importAssign;busy=true;importStatus="Importerar ljud…";new Thread(()->{int count=0;List<String> issues=new ArrayList<>();try{for(Uri u:uris){String name=name(u);try(InputStream raw=activity.getContentResolver().openInputStream(u)){if(raw==null)continue;if(name.toLowerCase(Locale.ROOT).endsWith(".zip")){if(!assigned.isEmpty())throw new IOException("Välj en ljudfil vid sången. Importera ZIP från Ljudbibliotek.");try(ZipInputStream z=new ZipInputStream(new BufferedInputStream(raw))){ZipEntry e;int entries=0;while((e=z.getNextEntry())!=null){if(++entries>1000)throw new IOException("För många filer i ZIP");if(!e.isDirectory()&&isAudio(e.getName()))try{if(save(z,e.getName(),""))count++;}catch(Exception ex){issues.add(new File(e.getName()).getName());}z.closeEntry();}}}else if(isAudio(name)){if(save(raw,name,uris.size()==1?assigned:""))count++;}else issues.add(name);}}importStatus=count+" ljudfiler importerade"+(issues.isEmpty()?"":" · "+issues.size()+" filer kunde inte importeras");}catch(Exception e){importStatus=count+" importerade · importen avbröts: "+e.getMessage();}finally{busy=false;}},"sions-audio-import").start();}
+ /** Smart import uses the same private media library without opening a second picker. */
+ public void importSmart(java.util.List<Uri> uris){
+   if(uris==null||uris.isEmpty())return;
+   Intent result=new Intent();
+   if(uris.size()==1)result.setData(uris.get(0));
+   else {
+     android.content.ClipData clip=new android.content.ClipData("Sions audio",new String[]{"*/*"},new android.content.ClipData.Item(uris.get(0)));
+     for(int i=1;i<uris.size();i++)clip.addItem(new android.content.ClipData.Item(uris.get(i)));
+     result.setClipData(clip);
+   }
+   importAssign="";
+   result(Activity.RESULT_OK,result);
+ }
  private String name(Uri u){try(android.database.Cursor c=activity.getContentResolver().query(u,new String[]{OpenableColumns.DISPLAY_NAME},null,null,null)){if(c!=null&&c.moveToFirst())return c.getString(0);}catch(Exception ignored){}return "audio";}
  private boolean isAudio(String name){return name.toLowerCase(Locale.ROOT).matches(".*\\.(mp3|opus|ogg|m4a|wav|aac|flac|mid|midi)$");}
  private boolean save(InputStream in,String original,String forced)throws Exception{
