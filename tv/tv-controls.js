@@ -24,6 +24,7 @@
       var state = {
         number: selected.song_number,
         title: selected.title,
+        authors: Array.isArray(selected.authors) ? selected.authors.slice(0,12) : [],
         lines: p.lines,
         section: label(p),
         index: at,
