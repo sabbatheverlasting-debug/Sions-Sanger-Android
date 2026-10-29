@@ -208,8 +208,8 @@ public final class SionsScore {
         factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd",false);
         factory.setXIncludeAware(false);
         factory.setExpandEntityReferences(false);
-        factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD,"");
-        factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_SCHEMA,"");
+        factory.setAttribute("http://javax.xml.XMLConstants/property/accessExternalDTD","");
+        factory.setAttribute("http://javax.xml.XMLConstants/property/accessExternalSchema","");
         javax.xml.parsers.DocumentBuilder builder=factory.newDocumentBuilder();
         builder.setEntityResolver((publicId,systemId)->new InputSource(new StringReader("")));
         String name=builder.parse(new ByteArrayInputStream(bytes)).getDocumentElement().getNodeName();
