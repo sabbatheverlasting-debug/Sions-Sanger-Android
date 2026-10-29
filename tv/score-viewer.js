@@ -3,6 +3,7 @@
 (function(){
   'use strict';
   function init(){
+    if(document.getElementById('sions-score-viewer'))return; // One score viewer per reader, even if DOMContentLoaded repeats.
     var native=window.SionsAndroid;
     var body=document.getElementById('songBody');
     var root=document.querySelector('#songScreen .song-inner');
