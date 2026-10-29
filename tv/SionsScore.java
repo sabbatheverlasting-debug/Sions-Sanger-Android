@@ -201,6 +201,9 @@ public final class SionsScore {
     }
 
     private static boolean validXml(byte[] bytes) throws Exception {
+        String raw=new String(bytes,StandardCharsets.UTF_8);
+        if(raw.toUpperCase(Locale.ROOT).contains("<!DOCTYPE") || raw.toUpperCase(Locale.ROOT).contains("<!ENTITY"))
+            throw new IOException("DTD och externa entiteter är inte tillåtna i MusicXML.");
         DocumentBuilderFactory factory=DocumentBuilderFactory.newInstance();
         factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING,true);
         factory.setFeature("http://xml.org/sax/features/external-general-entities",false);
@@ -208,8 +211,8 @@ public final class SionsScore {
         factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd",false);
         factory.setXIncludeAware(false);
         factory.setExpandEntityReferences(false);
-        factory.setAttribute("http://javax.xml.XMLConstants/property/accessExternalDTD","");
-        factory.setAttribute("http://javax.xml.XMLConstants/property/accessExternalSchema","");
+        // Reject DTDs and entities in imported files, independently of parser-specific features.
+        factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl",true);
         javax.xml.parsers.DocumentBuilder builder=factory.newDocumentBuilder();
         builder.setEntityResolver((publicId,systemId)->new InputSource(new StringReader("")));
         String name=builder.parse(new ByteArrayInputStream(bytes)).getDocumentElement().getNodeName();
