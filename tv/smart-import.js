@@ -16,7 +16,7 @@ function init(){
  '#sions-smart-import .ssi-helptext[hidden]{display:none!important}',
  '#sions-smart-import .ssi-status{margin-top:12px!important;white-space:pre-line}',
  '#sions-smart-import .ssi-count{font-weight:650;margin:10px 0!important}',
- '#moreScreen .ssi-legacy-hidden,#sau-catalog .ssi-legacy-hidden,#sions-score-import.ssi-legacy-hidden{display:none!important}'
+ '#moreScreen .ssi-legacy-hidden,#sau-catalog .ssi-legacy-hidden{display:none!important}'
  ].join('\n');document.head.appendChild(css);
  const panel=document.createElement('section');panel.id='sions-smart-import';panel.className='panel';
  const title=document.createElement('div');title.className='ssi-title';
@@ -52,7 +52,7 @@ function init(){
  const catalogImport=catalog&&Array.from(catalog.querySelectorAll('button')).find(b=>b.textContent.includes('Importera ljud / ZIP'));
  if(catalogImport)catalogImport.classList.add('ssi-legacy-hidden');
  manage.onclick=()=>{if(libraryLauncher)libraryLauncher.click();else status.textContent='Ljudbiblioteket kan inte öppnas just nu.';};
- const scoreImport=document.getElementById('sions-score-import');if(scoreImport)scoreImport.classList.add('ssi-legacy-hidden');
+ // Keep the song-specific score picker visible; it binds notes to the open song.
  const source=document.getElementById('allSongsCount');
  const refresh=()=>{if(source)count.textContent=source.textContent+' sånger i biblioteket';};refresh();
  if(source)new MutationObserver(refresh).observe(source,{childList:true,characterData:true,subtree:true});
