@@ -50,21 +50,19 @@
       "releaseAllowed": false,
       "rightsStatus": "text_source_draft_pending_scan_comparison",
       "sourceUrl": "https://sv.wikisource.org/wiki/Upp,_min_tunga,_att_lovsjunga",
-      "specificEdition": "1695 års psalmbok, nr 157; äldre språkdräkt",
+      "specificEdition": "Wallins bearbetning 1816, fyra verser; äldre ord menlöst och förer, moderniserad stavning",
       "verses": [
-        "VP min tunga at lofsiunga\nEn berömlig kamp och strijd/\nSom sigh hände när Gudh sände\nOss til hielp sin Son här nidh.\nHwilken wärfde At wij ärfde\nSeger och en ewig frijd.",
-        "Ormen rådde och förmådde\nEwa til olydighet.\nPå thet oråd fölgde onåd\nNär hon dödsens äple bet:\nTå war brutit och beslutit\nDöden döö i ewighet.",
-        "Nu at wisa straff och lisa\nOch Gudz miskund; war förwist\nVthaf nöden/ at medh döden\nEwe brott och ormsens list\nSkulle straffas och förskaffas\nLäkedom emot then brist.",
-        "När tå tiden war förliden/\nSom af Gudh besluten war/\nStiger Sonen vthaf thronen/\nAf een jungfru Mandom taar:\nBlijr wår broder/ jungfrun moder/\nSom Propheten talat haar.",
-        "När förledne och framskredne\nWoro try och trettije åhr;\nLät han skilja sigh medh wilja/\nSom ett lamb ifrån sin fåår.\nMåste lida spott och qwida:\nWillig til sin pino går.",
-        "Törnekröntes/ at här röntes\nMeer än mennskligt tolamod/\nAch besinna! Han lät rinna\nFör wår synd sitt dyra blodh:\nHwilket renar och förenar\nOss medh Gudh i Dopsens flodh.",
-        "Han hudflängdes och vphängdes\nVppå korssens trä och stam:\nHan är worden här på jorden\nEtt oskyldigt Påskalamb:\nHan haar dragit/ från oss tagit\nSyndsens bördo last och skam.",
-        "När fullbordat alt war wordet/\nHan sin anda sidst vpgaf.\nTogs strax neder: och medh heder\nLades vthi Josephs graf.\nFadrens ifwer blidkad blifwer;\nDödsens boijor lösas af.",
-        "Efter Skriften vthaf griften\nStod han vp och seger want;\nTher medh fällte Satans wälde/\nThen medh mörcksens kädior bandt.\nFörst förlänte Testamente\nTil sin kärleks wissa pant.",
-        "Satan fängslas och nu ängzlas:\nSyndsens wåld och dödsens macht\nÄr nu bunden/ öfwerwunnen/\nHelwetis port är nederlagd.\nNu är helat hwad haar felat/\nFadrens nådh är återbracht.",
-        "Ty lofsiunge gamle/ vnge/\nFadren i sin härlighet;\nOch hembäre tack och ähre/\nSonen för hans kärlighet;\nSamt then sanne Helge Ande/\nNu och i all ewighet."
+        "Upp, min tunga,\natt lovsjunga\nHjälten, som på korsets stam\nför oss blödde,\nled och dödde,\nsom ett menlöst offerlamm.\nHan ur griften\nefter Skriften\nnu i ära träder fram.",
+        "Han fullgjorde\nvad vi borde\noch blev vår rättfärdighet.\nHan avvände\nvårt elände\nför båd tid och evighet.\nHan förvärvde\natt vi ärvde\nljus och frid och salighet.",
+        "Vi förlossas,\normen krossas,\navgrundens och dödens makt\nnu är bunden.\nFrån den stunden\nallt är Sonen underlagt.\nNu är helat\nvad vi felat\noch Guds nåd i ljuset bragt.",
+        "Gamla, unga\nmå lovsjunga\nFaderns makt och härlighet\noch hembära\nSonen ära\nför så stor barmhärtighet,\nprisa Anden,\nsom vid handen\nförer oss till salighet."
       ],
-      "notes": "Textutkast. Ej verifierat mot Sions Sånger 1948; inga noter eller ljud ingår."
+      "notes": "Textutkast för Wallins fyra verser, inte den tidigare elvaversiga 1695-texten. Wikisource anger att 1986 års utgåva bytte menlöst till skuldlöst och förer till leder; de äldre orden används här. Exakt jämförelse med Sions Sånger 1948 återstår. Inga noter eller ljud ingår.",
+      "authors": [
+        "Venantius Fortunatus",
+        "Gustaf Ållon",
+        "Johan Olof Wallin"
+      ]
     },
     {
       "id": "22",
