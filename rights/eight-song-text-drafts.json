@@ -16,10 +16,11 @@
       "specificEdition": "Lutherförbundets Sångbok 1913, S19",
       "verses": [
         "Nu tacken Gud, allt folk,\nMed hjärtans fröjd och gamman,\nFör stora ting, dem han\nGör med oss allesamman:\nDen från vårt moderslif,\nAf nåd och stor miskund,\nSå mycket godt oss gjort\nOch än gör hvarje stund.",
-        "Den nåderike Gud,\nHan oss ock här förläne,\nAtt vi med hjärtans fröjd\nI frid städs honom tjäne;\nOch Herren, sor af nåd,\nOss vare alltid blid,\nOss vare Herren när,\nNu och i evig tid.",
+        "Den nåderike Gud,\nHan oss ock här förläne,\nAtt vi med hjärtans fröjd\nI frid städs honom tjäne;\nOch Herren, stor af nåd,\nOss vare alltid blid,\nOss vare Herren när,\nNu och i evig tid.",
         "Pris vare dig, o Gud,\nO Fader, Son och Ande,\nHögtlofvad, store Gud!\nAf oss i allo lande!\nDu som af evighet,\nTreenig Gud förvisst,\nHar varit, är och blir,\nHögtlofvad först och sist."
       ],
-      "notes": "Textutkast. Ej verifierat mot Sions Sånger 1948; inga noter eller ljud ingår. Källtranskriptionens misstänkta OCR-fel 'sor af nåd' bevarat och måste jämföras med sidbild."
+      "notes": "Textutkast; sor i nätkällans OCR har rättats till stor mot 1819 års text. Ej verifierat mot Sions Sånger 1948. Inga noter eller ljud.",
+      "additionalSourceUrl": "https://sv.wikisource.org/wiki/Wikisource:Projekt_1819_års_psalmbok"
     },
     {
       "id": "9",
