@@ -1,0 +1,128 @@
+{
+  "schemaVersion": 1,
+  "mode": "text-only-release",
+  "preparedOn": "2026-11-02",
+  "releaseAllowed": true,
+  "rightsCleared": true,
+  "rightsTerritory": "SE",
+  "expectedSongCount": 2,
+  "expectedSongIds": [
+    "9",
+    "50"
+  ],
+  "description": "Två äldre texter. Källbaserad bedömning för Sverige; inte myndighets- eller Google Play-godkännande. Ingen musik/notbild/inspelning distribueras. Egna importer lagras på användarens enhet.",
+  "songs": [
+    {
+      "id": "9",
+      "title": "Lova den Herre",
+      "releaseAllowed": true,
+      "rightsStatus": "public_domain_text_assessment_sweden",
+      "verses": [
+        "Lova den Herre som tronar i glans och i ära,\nUpp, o min själ, att din hyllning åt konungen bära.\nHarpornas ljud\nPrise ock Herren, din Gud,\nHerren, så ljuvlig, så nära!",
+        "Lova den Herre, vars hand hela världen betvingar,\nSom dig på örnvingar burit, på mäktiga vingar,\nSom dig beskärt\nVad för ditt hjärta var kärt,\nFröjd utan gräns han dig bringar.",
+        "Lova hans namn! Detta lov, o min själ, du ej glömme,\nHela ditt liv den barmhärtiges under berömme!\nHan är ditt ljus.\nLyft dig ur stoft och ur grus,\nLovet i evighet strömme!"
+      ],
+      "notes": "Text transkriberad från användarens sida med tryckta krediter J. Neander och C. A. Torén. Arbetsbedömning i Sverige: skyddstiden för den attribuerade texten har löpt ut (senaste dödsår 1904, utgång 1974). Inga noter, arrangemang, bokfoto eller ljud ingår.",
+      "appSongNumber": 9,
+      "authors": [
+        "J. Neander",
+        "C. A. Torén"
+      ],
+      "melodyCredit": "Tysk melodi 1600-talet",
+      "specificEdition": "Sions Sånger 1948, användarens foto s.16, nr9, tre verser; endast text transkriberad",
+      "sourceType": "user_uploaded_page_photo",
+      "sourceFile": "image-1793613482342.jpg",
+      "contentScope": "text-only",
+      "rights": {
+        "originalText": "cleared",
+        "swedishEdition": "cleared",
+        "melody": "not_included",
+        "arrangement": "not_included",
+        "recording": "not_included"
+      },
+      "category": "Lov- och tacksägelsesånger",
+      "sourceUrl": "https://chatgpt.com/library?file_id=libfile_f84531ccf3b881918666a6ad64efdf9d&account_id=personal",
+      "rightsEvidence": [
+        {
+          "sourceUrl": "https://chatgpt.com/library?file_id=libfile_f84531ccf3b881918666a6ad64efdf9d&account_id=personal",
+          "specificEdition": "Sions Sånger 1948, användarens foto s.16, nr9, tre verser; endast text transkriberad",
+          "checkedOn": "2026-11-02",
+          "checkedBy": "Codex – källbaserad textgranskning",
+          "scope": "text-only"
+        },
+        {
+          "sourceUrl": "https://runeberg.org/authors/torencar.html",
+          "specificEdition": "C. A. Torén 1813–1904",
+          "checkedOn": "2026-11-02",
+          "checkedBy": "Codex – källbaserad textgranskning",
+          "scope": "text-only"
+        },
+        {
+          "sourceUrl": "https://www.deutsche-biographie.de/118586688.html",
+          "specificEdition": "Joachim Neander 1650–1680",
+          "checkedOn": "2026-11-02",
+          "checkedBy": "Codex – källbaserad textgranskning",
+          "scope": "text-only"
+        },
+        {
+          "sourceUrl": "https://www.riksdagen.se/sv/dokument-och-lagar/dokument/svensk-forfattningssamling/lag-1960729-om-upphovsratt-till-litterara-och_sfs-1960-729/",
+          "specificEdition": "SFS 1960:729, 4 och 43 §§; svensk bedömning, inte myndighetsgodkännande",
+          "checkedOn": "2026-11-02",
+          "checkedBy": "Codex – källbaserad textgranskning",
+          "scope": "text-only"
+        }
+      ]
+    },
+    {
+      "id": "50",
+      "title": "Din klara sol går åter opp",
+      "appSongNumber": 50,
+      "releaseAllowed": true,
+      "rightsStatus": "public_domain_text_assessment_sweden",
+      "sourceUrl": "https://runeberg.org/psalmbok/1932/0283.html",
+      "specificEdition": "Den svenska psalmboken, Herzogs-Melins 1932, nr420, s.285, fyra verser; interpunktion/versaler normaliserade",
+      "verses": [
+        "Din klara sol går åter opp.\nJag tackar dig, min Gud.\nMed kraft och mod och nyfött hopp\njag höjer glädjens ljud.",
+        "Din sol går opp för ond och god,\nför alla som för mig.\nO må jag så i tålamod\noch kärlek likna dig.",
+        "O må jag ock med flit och dygd\noch måtta i begär\nän kunna glädjas i ditt skygd\nvar dag du mig beskär.",
+        "Då skall jag, trygg i råd och dåd,\ntill dig, o Fader, fly\noch än förnimma att din nåd\när varje morgon ny."
+      ],
+      "notes": "Äldre fyraversversion jämförd mot 1932 års tryck. Inte utlovad som exakt 1948-text. Arbetsbedömning i Sverige: Wallins text är fri efter utgången av 1909. Inga noter eller ljud ingår.",
+      "contentScope": "text-only",
+      "rights": {
+        "originalText": "cleared",
+        "swedishEdition": "cleared",
+        "melody": "not_included",
+        "arrangement": "not_included",
+        "recording": "not_included"
+      },
+      "category": "Morgonsånger",
+      "authors": [
+        "Johan Olof Wallin"
+      ],
+      "rightsEvidence": [
+        {
+          "sourceUrl": "https://runeberg.org/psalmbok/1932/0283.html",
+          "specificEdition": "Den svenska psalmboken, Herzogs-Melins 1932, nr420, s.285, fyra verser; interpunktion/versaler normaliserade",
+          "checkedOn": "2026-11-02",
+          "checkedBy": "Codex – källbaserad textgranskning",
+          "scope": "text-only"
+        },
+        {
+          "sourceUrl": "https://runeberg.org/img/psalmbok/1932/0283.5.png",
+          "specificEdition": "Faksimil s.285; Wallin 1779–1839 och samtliga fyra verser",
+          "checkedOn": "2026-11-02",
+          "checkedBy": "Codex – källbaserad textgranskning",
+          "scope": "text-only"
+        },
+        {
+          "sourceUrl": "https://www.riksdagen.se/sv/dokument-och-lagar/dokument/svensk-forfattningssamling/lag-1960729-om-upphovsratt-till-litterara-och_sfs-1960-729/",
+          "specificEdition": "SFS 1960:729, 4 och 43 §§; svensk bedömning, inte myndighetsgodkännande",
+          "checkedOn": "2026-11-02",
+          "checkedBy": "Codex – källbaserad textgranskning",
+          "scope": "text-only"
+        }
+      ]
+    }
+  ]
+}

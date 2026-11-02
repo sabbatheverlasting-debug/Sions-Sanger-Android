@@ -10,7 +10,7 @@ on:
         description: 'review bygger textutkast; approved kräver godkänt publiceringsmanifest'
         type: choice
         options: [review, approved]
-        default: review
+        default: approved
 
 permissions:
   contents: read
@@ -42,9 +42,9 @@ jobs:
         env:
           REQUESTED_MODE: ${{ inputs.content_mode }}
         run: |
-          MODE="${REQUESTED_MODE:-review}"
+          MODE="${REQUESTED_MODE:-approved}"
           if [ "$MODE" = approved ]; then
-            python3 rights/prepare_play_build.py --root android-source --manifest rights/public-release-manifest.json --version-code "$((200000 + GITHUB_RUN_NUMBER))"
+            python3 rights/prepare_play_build.py --root android-source --manifest rights/two-text-public-release.json --version-code "$((200000 + GITHUB_RUN_NUMBER))"
             echo 'label=APPROVED' >> "$GITHUB_OUTPUT"
           else
             python3 rights/prepare_play_build.py --root android-source --manifest rights/eight-song-text-drafts.json --review --version-code "$((200000 + GITHUB_RUN_NUMBER))"
@@ -69,36 +69,40 @@ jobs:
           sdkmanager 'platforms;android-36' 'build-tools;36.0.0'
           gradle -p android-source --no-daemon :app:bundleRelease :app:assembleRelease
           mkdir deliverables
-          cp android-source/app/build/outputs/bundle/release/app-release.aab deliverables/Sions-Sanger-1.21.aab
-          cp android-source/app/build/outputs/apk/release/app-release.apk deliverables/Sions-Sanger-1.21.apk
+          cp android-source/app/build/outputs/bundle/release/app-release.aab deliverables/Sions-Sanger-1.22.aab
+          cp android-source/app/build/outputs/apk/release/app-release.apk deliverables/Sions-Sanger-1.22.apk
           cp android-source/app/src/main/assets/BUILD-STATUS.txt deliverables/BUILD-STATUS.txt
           cp android-source/app/src/main/assets/song-sources.json deliverables/song-sources.json
       - name: Verifiera paket, API, signering och inbyggda texter
         run: |
-          jarsigner -verify deliverables/Sions-Sanger-1.21.aab
-          keytool -printcert -jarfile deliverables/Sions-Sanger-1.21.aab -rfc > "$RUNNER_TEMP/aab-cert.pem"
+          jarsigner -verify deliverables/Sions-Sanger-1.22.aab
+          keytool -printcert -jarfile deliverables/Sions-Sanger-1.22.aab -rfc > "$RUNNER_TEMP/aab-cert.pem"
           openssl x509 -in "$RUNNER_TEMP/aab-cert.pem" -outform DER -out "$RUNNER_TEMP/aab-cert.der"
           echo "dd65ba4802942445bee1227499ee895f193e57834846f85d8dff92f8ef16c5c9  $RUNNER_TEMP/aab-cert.der" | sha256sum --check --status
-          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs deliverables/Sions-Sanger-1.21.apk
-          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging deliverables/Sions-Sanger-1.21.apk > "$RUNNER_TEMP/badging.txt"
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs deliverables/Sions-Sanger-1.22.apk
+          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging deliverables/Sions-Sanger-1.22.apk > "$RUNNER_TEMP/badging.txt"
           python3 - <<'PY'
           import json, os, pathlib, re, zipfile
           badging = pathlib.Path(os.environ['RUNNER_TEMP'], 'badging.txt').read_text()
           assert "package: name='se.sionssanger.app'" in badging
           assert "targetSdkVersion:'36'" in badging
           assert 'application-debuggable' not in badging
-          with zipfile.ZipFile('deliverables/Sions-Sanger-1.21.aab') as z:
+          with zipfile.ZipFile('deliverables/Sions-Sanger-1.22.aab') as z:
               html = z.read('base/assets/index.html').decode()
               found = json.loads(re.search(r'<script id="initialSongs"[^>]*>(.*?)</script>', html, re.S).group(1))['songs']
-              assert len(found) == 8
-              assert {s['song_number'] for s in found} == {7,9,20,22,31,415,46,50}
+              assert len(found) in (2, 8)
+              ids = {s['song_number'] for s in found}
+              assert ids == ({9,50} if len(found) == 2 else {7,9,20,22,31,415,46,50})
+              if len(found) == 2:
+                  assert 'Sions Sånger · Granskning' not in html
+                  assert not any(n.lower().endswith(('.mp3','.opus','.ogg','.wav','.m4a','.musicxml','.mxl','.pdf')) for n in z.namelist())
               assert all(s['sections'] for s in found)
               assert not any(n.endswith(('.p12','.jks','.keystore')) for n in z.namelist())
-          print('Verifierat: 8 sånger, API 36, rätt paketnamn, release och inga privata nycklar i AAB.')
+          print('Verifierat: valt sångurval, API 36, rätt paketnamn, release och inga privata nycklar i AAB.')
           PY
       - uses: actions/upload-artifact@v4
         with:
-          name: Sions-Sanger-1.21-${{ steps.content.outputs.label }}
+          name: Sions-Sanger-1.22-${{ steps.content.outputs.label }}
           path: deliverables/*
           if-no-files-found: error
       - name: Radera temporär nyckelfil

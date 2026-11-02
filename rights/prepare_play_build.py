@@ -24,13 +24,17 @@ def prepare(root, manifest_path, review, version_code):
             if song.get('audioFile') or song.get('musicXmlFile'):
                 raise ValueError('Draft build includes lyrics only')
     else:
-        songs = verified_songs(data, count=8)
+        if data.get('mode') != 'text-only-release' or data.get('expectedSongCount') != 2 or data.get('expectedSongIds') != ['9', '50']:
+            raise ValueError('PUBLICERING BLOCKERAD: Expected the two selected text-only hymns')
+        songs = verified_songs(data, count=2)
+        if {str(s.get('id')) for s in songs} != {'9', '50'} or any(s.get('contentScope') != 'text-only' for s in songs):
+            raise ValueError('Unexpected public song selection')
     index = root / 'app/src/main/assets/index.html'
     html, _ = replace_embedded_songs(index.read_text(encoding='utf-8'), songs)
     html = html.replace('Biblioteket är tomt från början. Importera alla sånger manuellt via JSON-filer.',
-                        'Åtta sångtexter ingår. Egna sånger, noter och ljud kan importeras.')
+                        f'{len(songs)} sångtexter ingår. Egna sånger, noter och ljud kan importeras.')
     html = html.replace('Ta bort alla dina importerade JSON-sånger? Biblioteket blir då tomt.',
-                        'Ta bort alla dina importerade JSON-sånger? De åtta inbyggda sångtexterna finns kvar.')
+                        f'Ta bort alla dina importerade JSON-sånger? De {len(songs)} inbyggda sångtexterna finns kvar.')
     # Expose edition information per hymn; these are not promised as exact 1948 texts.
     credits = [{'id': s['id'], 'title': s['title'], 'edition': s.get('specificEdition'),
                 'source': s.get('sourceUrl'), 'notes': s.get('notes')} for s in songs]
@@ -41,13 +45,13 @@ def prepare(root, manifest_path, review, version_code):
     (index.parent / 'song-sources.json').write_text(json.dumps(credits, ensure_ascii=False, indent=2), encoding='utf-8')
     (index.parent / 'BUILD-STATUS.txt').write_text(
         'GRANSKNINGSVERSION. Sångtexterna är inte godkända för offentlig publicering.\n' if review else
-        'Godkänt publiceringsmanifest har validerats.\n', encoding='utf-8')
+        'Två äldre sångtexter, källgranskade för Sverige. Inga noter eller ljud ingår. Inte Google Play-godkännande.\n', encoding='utf-8')
     gradle = root / 'app/build.gradle'
     text = gradle.read_text(encoding='utf-8')
     for pattern, replacement in [(r'compileSdk\s+\d+', 'compileSdk 36'),
                                  (r'targetSdk\s+\d+', 'targetSdk 36'),
                                  (r'versionCode\s+\d+', f'versionCode {version_code}'),
-                                 (r"versionName\s+'[^']+'", "versionName '1.21" + ('-review' if review else '') + "'")]:
+                                 (r"versionName\s+'[^']+'", "versionName '1.22" + ('-review' if review else '') + "'")]:
         text, n = re.subn(pattern, replacement, text)
         if n != 1:
             raise ValueError('Ambiguous Gradle setting: ' + pattern)

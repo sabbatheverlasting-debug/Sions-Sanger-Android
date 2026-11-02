@@ -36,6 +36,31 @@ class PlayBuildTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'BLOCKERAD'):
             prepare(self.root, 'rights/eight-song-text-drafts.json', False, 200001)
 
+    def test_public_release_contains_only_two_texts_and_no_review_label(self):
+        prepare(self.root, 'rights/two-text-public-release.json', False, 200005)
+        import re
+        html = (self.root / 'app/src/main/assets/index.html').read_text()
+        songs = json.loads(re.search(r'<script id="initialSongs"[^>]*>(.*?)</script>', html).group(1))['songs']
+        self.assertEqual({s['song_number'] for s in songs}, {9, 50})
+        self.assertNotIn('Granskning', html)
+        self.assertEqual([len(s['sections']) for s in songs], [3, 4])
+
+    def test_text_only_release_rejects_media(self):
+        data = json.loads(pathlib.Path('rights/two-text-public-release.json').read_text())
+        data['songs'][0]['audioFile'] = 'not-cleared.mp3'
+        p = self.root / 'media.json'
+        p.write_text(json.dumps(data))
+        with self.assertRaisesRegex(ValueError, 'media'):
+            prepare(self.root, p, False, 200005)
+
+    def test_text_only_release_still_requires_swedish_text_clearance(self):
+        data = json.loads(pathlib.Path('rights/two-text-public-release.json').read_text())
+        data['songs'][0]['rights']['swedishEdition'] = 'unknown'
+        p = self.root / 'unknown.json'
+        p.write_text(json.dumps(data))
+        with self.assertRaisesRegex(ValueError, 'swedishEdition'):
+            prepare(self.root, p, False, 200005)
+
     def test_missing_verse_blocks_review_build(self):
         data = json.loads(pathlib.Path('rights/eight-song-text-drafts.json').read_text())
         data['songs'][0]['verses'] = []
