@@ -3,7 +3,7 @@ name: Sions Sånger – signerad AAB och APK
 on:
   push:
     branches: ['songs/eight-text-drafts-2026-11-02']
-    paths: ['rights/**', '.github/workflows/play-aab.yml']
+    paths: ['tv/**', 'rights/**', '.github/workflows/play-aab.yml']
   workflow_dispatch:
     inputs:
       content_mode:
