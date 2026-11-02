@@ -4,7 +4,7 @@
   "preparedOn": "2026-11-02",
   "releaseAllowed": false,
   "rightsCleared": false,
-  "description": "Åtta önskade sånger: sju textutkast från äldre källor och en oidentifierad titel. Detta är inte public-release-manifest.json och konsumeras inte av publiceringsbygget.",
+  "description": "Åtta önskade sånger med textutkast. Nr 9 transkriberad från användarens sångbokssida; övriga från äldre nätkällor. Inte publiceringsmanifest och inte inbyggt i appen.",
   "songs": [
     {
       "id": "7",
@@ -25,9 +25,22 @@
       "id": "9",
       "title": "Lova den Herre",
       "releaseAllowed": false,
-      "rightsStatus": "identity_unresolved",
-      "verses": [],
-      "notes": "Exakt sång måste identifieras från första versen och upphovspersoner; ersätt inte med en liknande titel."
+      "rightsStatus": "identified_from_user_scan_pending_rights_review",
+      "verses": [
+        "Lova den Herre som tronar i glans och i ära,\nUpp, o min själ, att din hyllning åt konungen bära.\nHarpornas ljud\nPrise ock Herren, din Gud,\nHerren, så ljuvlig, så nära!",
+        "Lova den Herre, vars hand hela världen betvingar,\nSom dig på örnvingar burit, på mäktiga vingar,\nSom dig beskärt\nVad för ditt hjärta var kärt,\nFröjd utan gräns han dig bringar.",
+        "Lova hans namn! Detta lov, o min själ, du ej glömme,\nHela ditt liv den barmhärtiges under berömme!\nHan är ditt ljus.\nLyft dig ur stoft och ur grus,\nLovet i evighet strömme!"
+      ],
+      "notes": "Tre verser transkriberade från användarens foto av s. 16. Radbrytningar och noternas stavelsebindestreck normaliserade. Författarnamn återges som tryckta. Texten identifierad; separat rättighetsgranskning och korrektur återstår. Ingen fyrstämmig notsats eller ljudinspelning inkluderad.",
+      "appSongNumber": 9,
+      "authors": [
+        "J. Neander",
+        "C. A. Torén"
+      ],
+      "melodyCredit": "Tysk melodi 1600-talet",
+      "specificEdition": "Sions Sånger, användarens uppgivna 1948 års utgåva, s. 16, nr 9; Mkl. 69",
+      "sourceType": "user_uploaded_page_photo",
+      "sourceFile": "image-1793613482342.jpg"
     },
     {
       "id": "20",
