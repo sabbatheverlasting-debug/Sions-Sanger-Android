@@ -638,6 +638,7 @@ print("TV-läge integrerat, APK version 1.16. Befintligt sångbibliotek oförän
 common_target = root / "app/src/main/java/se/sabbath/tv/TvLink.java"
 common_target.parent.mkdir(parents=True, exist_ok=True)
 shutil.copy2(tv_folder / "TvLink.java", common_target)
+shutil.copy2(tv_folder / "TvSession.java", common_target.parent / "TvSession.java")
 text = java.read_text(encoding="utf-8")
 text = text.replace("setContentView(webView);", "setContentView(webView);\n        se.sabbath.tv.TvLink.attach(this,webView);", 1)
 text = text.replace('if (tvServer != null) tvServer.update(value);', '''if (tvServer != null) tvServer.update(value);
@@ -848,3 +849,4 @@ text = replace_once(text, "    private class AppBridge {",
     "MainActivity.java")
 java.write_text(text,encoding="utf-8")
 print("En gemensam import, komplett ZIP-säkerhetskopia och (?) formatguide.")
+

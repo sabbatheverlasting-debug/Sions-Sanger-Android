@@ -11,10 +11,11 @@ import java.io.ByteArrayOutputStream;
 import java.util.*;
 import org.json.*;
 
-/** Shared opt-in sender. Sends reader content only, never notes or the full screen. */
+/** Shared session sender. Sends reader content only, never notes or the full screen. */
 public final class TvLink implements Application.ActivityLifecycleCallbacks {
  private static final Map<Activity,TvLink> links=new WeakHashMap<>();
  private final Activity activity;
+ private final TvSession session;
  private final Handler ui=new Handler(Looper.getMainLooper());
  private WebView web;
  private Button button;
@@ -24,13 +25,20 @@ public final class TvLink implements Application.ActivityLifecycleCallbacks {
  private int page;
  private String lastBody="";
  private long lastSend;
+ private long webEpoch;
  private final Runnable tick=new Runnable(){public void run(){
+  if(resumed&&!activity.isDestroyed())session.refresh();
   if(enabled&&resumed&&!activity.isDestroyed()){
    if(web!=null)readWeb();else send();
   }
   if(!activity.isDestroyed())ui.postDelayed(this,1000);
  }};
  private TvLink(Activity a,WebView w){activity=a;web=w;
+  session=new TvSession(a,following->{
+   if(following&&!enabled){enabled=true;blank=false;}
+   if(!following)enabled=false;
+   button.setText(enabled?"TV ●":"Visa på TV");
+  });
   a.getApplication().registerActivityLifecycleCallbacks(this);
   FrameLayout root=a.findViewById(android.R.id.content);
   button=new Button(a);button.setText("TV");button.setContentDescription("Sabbath TV – visa läsinnehåll");
@@ -55,7 +63,7 @@ public final class TvLink implements Application.ActivityLifecycleCallbacks {
    }catch(Exception ignored){}
   });
  }
- public static void stop(Activity a){a.runOnUiThread(()->{TvLink l=links.get(a);if(l!=null){l.blank=true;l.send();l.enabled=false;l.current=null;}a.sendBroadcast(new Intent("se.churchshow.tvbridge.STOP").setComponent(new ComponentName("se.churchshow.tvbridge","se.churchshow.tvbridge.SlideReceiver")));});}
+ public static void stop(Activity a){a.runOnUiThread(()->{TvLink l=links.get(a);if(l!=null){l.blank=true;l.send();l.session.ignoreCurrent();l.enabled=false;l.current=null;}a.sendBroadcast(new Intent("se.churchshow.tvbridge.STOP").setComponent(new ComponentName("se.churchshow.tvbridge","se.churchshow.tvbridge.SlideReceiver")));});}
  public static void slide(Activity a,String json){
   a.runOnUiThread(()->{TvLink link=links.get(a);if(link==null)return;try{link.update(new JSONObject(json));link.jpeg=null;if(link.enabled)link.send();}catch(Exception ignored){}});
  }
@@ -67,14 +75,15 @@ public final class TvLink implements Application.ActivityLifecycleCallbacks {
  private void menu(){
   String[] choices=enabled?new String[]{"Nästa TV-textsida","Föregående TV-textsida",blank?"Visa innehåll igen":"Svart TV-bild","Avsluta delning från denna app","Öppna mobilbryggan"}:new String[]{"Visa läsinnehåll på TV","Öppna mobilbryggan"};
   new AlertDialog.Builder(activity).setTitle("Sabbath TV").setItems(choices,(d,index)->{
-   if(!enabled){if(index==0){enabled=true;blank=false;button.setText("TV ●");openBridge();}else openBridge();return;}
+   if(!enabled){if(index==0){session.allowCurrent();enabled=true;blank=false;button.setText("TV ●");openBridge();}else openBridge();return;}
    if(index==0){page++;send();}else if(index==1){page=Math.max(0,page-1);send();}
    else if(index==2){blank=!blank;send();}
-   else if(index==3){blank=true;send();enabled=false;button.setText("TV");}
+   else if(index==3){blank=true;send();session.ignoreCurrent();enabled=false;button.setText("TV");}
    else openBridge();
   }).setNegativeButton("Stäng",null).show();
  }
  private void openBridge(){
+  session.allowCurrent();
   try{activity.startActivity(new Intent().setComponent(new ComponentName("se.churchshow.tvbridge","se.churchshow.tvbridge.MainActivity")).putExtra("start",true));}
   catch(ActivityNotFoundException e){new AlertDialog.Builder(activity).setTitle("Installera mobilbryggan en gång")
    .setMessage("Installera Sabbath TV – mobilbrygga från Church-Show-projektets GitHub-bygge. Samma brygga används av alla dina appar.")
@@ -82,8 +91,9 @@ public final class TvLink implements Application.ActivityLifecycleCallbacks {
    .setNegativeButton("Stäng",null).show();}
  }
  private void readWeb(){
+  final long epoch=webEpoch;
   String script="(function(){if(typeof window.sabbathTvContent==='function')return window.sabbathTvContent();return null;})()";
-  try{web.evaluateJavascript(script,raw->{try{if(!"null".equals(raw)){JSONObject value=new JSONObject(raw);update(value);jpeg=null;}send();}catch(Exception ignored){}});}catch(Exception ignored){}
+  try{web.evaluateJavascript(script,raw->{if(epoch!=webEpoch||!resumed||!enabled||activity.isDestroyed())return;try{if(raw==null||"null".equals(raw))return;if(!"null".equals(raw)){JSONObject value=new JSONObject(raw);update(value);jpeg=null;}send();}catch(Exception ignored){}});}catch(Exception ignored){}
  }
  private static List<String> chunks(String s){
   List<String> out=new ArrayList<>();String rest=s;
@@ -91,7 +101,7 @@ public final class TvLink implements Application.ActivityLifecycleCallbacks {
   out.add(rest);return out;
  }
  private void send(){
-  if(!enabled||current==null)return;
+  if(!enabled||!resumed||activity.isDestroyed()||current==null)return;
   try{
    JSONObject data=new JSONObject(current.toString());
    List<String> pages=data.optBoolean("wholeVerse")?java.util.Collections.singletonList(data.optString("text")):chunks(data.optString("text"));page=Math.min(page,pages.size()-1);
@@ -102,12 +112,13 @@ public final class TvLink implements Application.ActivityLifecycleCallbacks {
    activity.sendBroadcast(intent);lastSend=System.currentTimeMillis();
   }catch(Exception ignored){}
  }
- @Override public void onActivityResumed(Activity a){if(a==activity){resumed=true;}}
- @Override public void onActivityPaused(Activity a){if(a==activity)resumed=false;}
- @Override public void onActivityDestroyed(Activity a){if(a==activity){ui.removeCallbacksAndMessages(null);links.remove(a);a.getApplication().unregisterActivityLifecycleCallbacks(this);}}
+ @Override public void onActivityResumed(Activity a){if(a==activity){resumed=true;session.resume();}}
+ @Override public void onActivityPaused(Activity a){if(a==activity){resumed=false;webEpoch++;session.pause();}}
+ @Override public void onActivityDestroyed(Activity a){if(a==activity){session.close();ui.removeCallbacksAndMessages(null);links.remove(a);a.getApplication().unregisterActivityLifecycleCallbacks(this);}}
  @Override public void onActivityCreated(Activity a,Bundle b){}
  @Override public void onActivityStarted(Activity a){}
  @Override public void onActivityStopped(Activity a){}
  @Override public void onActivitySaveInstanceState(Activity a,Bundle b){}
 }
+
 

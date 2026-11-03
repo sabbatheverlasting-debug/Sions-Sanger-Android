@@ -34,6 +34,8 @@ jobs:
       - name: Installera Android SDK
         uses: android-actions/setup-android@v4
 
+      - name: Test automatic shared TV session and stop
+        run: python3 tv/test-session.py tv/TvSession.java
       - name: Installera Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
@@ -142,4 +144,5 @@ jobs:
             Sions-Sanger-TV-v1.20.apk
             Sions-Sanger-v1.20.apk
           if-no-files-found: error
+
 
