@@ -165,7 +165,7 @@
     panel.innerHTML = '<div class="stv-inner">' +
       '<div class="stv-heading"><h1>Sions Sånger · TV</h1><button id="stv-close" class="stv-btn secondary">Stäng ✕</button></div>' +
       '<p class="stv-muted">Styr sångerna här. På TV:n syns endast vald vers i liggande format.</p>' +
-      '<div class="stv-card"><div class="stv-strong">1. Gemensam Sabbath TV-anslutning</div><p class="stv-muted">TV, Chromecast, HDMI och högtalare väljer du i Sabbath TV. Sång, vers, bakgrund och om sångljud ska följa med väljer du här.</p><div class="stv-flex"><button class="stv-btn" id="stv-connect">TV-inställningar · Sabbath TV</button><button class="stv-btn secondary" id="stv-stop">Avsluta TV och ljud</button></div><details id="stv-direct"><summary>Avancerat: direktanslutning utan Sabbath TV</summary>' +
+      '<div class="stv-card"><div class="stv-strong">1. Gemensam Sabbath TV-anslutning</div><p class="stv-muted">På LG:n använder du Sabbath TV Receiver. Starta Sabbath TV Sender på mobilen och parkoppla en gång. Uppdaterade appar delar samma aktiva anslutning vid appbyte. TV, HDMI och högtalare väljer du där. Sång, vers, bakgrund och sångljud väljer du här.</p><div class="stv-flex"><button class="stv-btn" id="stv-connect">TV-inställningar · Sabbath TV</button><button class="stv-btn secondary" id="stv-stop">Avsluta TV och ljud</button></div><details id="stv-direct"><summary>Avancerat: direktanslutning utan Sabbath TV</summary>' +
       '<p class="stv-muted">Anslut TV och mobil till samma Wi-Fi. Öppna adressen nedan i TV:ns webbläsare (till exempel LG eller webbläsare på Google TV). Låt appen vara öppen och mobilen vara vaken.</p>' +
       '<div id="stv-url" class="stv-address"></div><div class="stv-flex" style="margin-top:10px">' +
       '<button class="stv-btn" id="stv-copy">Kopiera TV-adress</button>' +
@@ -388,4 +388,5 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();
 })();
+
 
