@@ -90,10 +90,10 @@ public final class TvLink implements Application.ActivityLifecycleCallbacks {
    .setPositiveButton("Visa nedladdning",(d,w)->activity.startActivity(new Intent(Intent.ACTION_VIEW,android.net.Uri.parse("https://github.com/sabbatheverlasting-debug/Church-Show/actions/workflows/android.yml"))))
    .setNegativeButton("Stäng",null).show();}
  }
+ public static void show(Activity a){a.runOnUiThread(()->{TvLink l=links.get(a);if(l==null)return;l.session.allowCurrent();l.enabled=true;l.blank=false;l.send();});}
  private void readWeb(){
-  final long epoch=webEpoch;
-  String script="(function(){if(typeof window.sabbathTvContent==='function')return window.sabbathTvContent();return null;})()";
-  try{web.evaluateJavascript(script,raw->{if(epoch!=webEpoch||!resumed||!enabled||activity.isDestroyed())return;try{if(raw==null||"null".equals(raw))return;if(!"null".equals(raw)){JSONObject value=new JSONObject(raw);update(value);jpeg=null;}send();}catch(Exception ignored){}});}catch(Exception ignored){}
+  // Sions publishes a sanitized native slide via AppBridge.tvUpdate, not a WebView getter.
+  send();
  }
  private static List<String> chunks(String s){
   List<String> out=new ArrayList<>();String rest=s;

@@ -678,7 +678,6 @@ java.write_text(text, encoding="utf-8")
 # Sions uses its own verse controls instead of the generic text-page menu.
 common = common_target.read_text(encoding="utf-8")
 common = common.replace('button.setText("TV");button.setContentDescription', 'button.setVisibility(View.GONE);button.setText("TV");button.setContentDescription', 1)
-common = common.replace('link.update(new JSONObject(json));link.jpeg=null;', 'link.enabled=true;link.update(new JSONObject(json));link.jpeg=null;', 1)
 common_target.write_text(common, encoding="utf-8")
 text = java.read_text(encoding="utf-8")
 text = text.replace('    private class AppBridge {', '''    private class AppBridge {
@@ -686,6 +685,7 @@ text = text.replace('    private class AppBridge {', '''    private class AppBri
         @JavascriptInterface public void tvConnect() {
             runOnUiThread(() -> {
                 try {
+                    se.sabbath.tv.TvLink.show(MainActivity.this);
                     startActivity(new Intent().setComponent(new android.content.ComponentName(
                         "se.churchshow.tvbridge", "se.churchshow.tvbridge.MainActivity")).putExtra("start", true));
                 } catch (android.content.ActivityNotFoundException e) {
