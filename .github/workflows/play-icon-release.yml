@@ -1,8 +1,8 @@
-name: Sions Sanger 1.23 Play update
+name: Sions Sanger 1.24 Play update
 on:
   push:
-    branches: [release/warm-icon-1.23]
-    paths: ['Sions-Sanger-1.23-Source.zip', '.github/workflows/play-icon-release.yml']
+    branches: [release/warm-icon-1.24]
+    paths: ['Sions-Sanger-1.24-Source.zip', '.github/workflows/play-icon-release.yml']
   workflow_dispatch:
 jobs:
   release:
@@ -11,7 +11,7 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v4
-      - run: unzip -q Sions-Sanger-1.23-Source.zip
+      - run: unzip -q Sions-Sanger-1.24-Source.zip
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -41,16 +41,16 @@ jobs:
         run: |
           APK=play-release/app/build/outputs/apk/release/app-release.apk
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --print-certs "$APK" | grep -F 'Signer #1 certificate SHA-256 digest: dd65ba4802942445bee1227499ee895f193e57834846f85d8dff92f8ef16c5c9'
-          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$APK" | grep -F "package: name='se.sionssanger.app' versionCode='200006' versionName='1.23'"
+          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$APK" | grep -F "package: name='se.sionssanger.app' versionCode='200007' versionName='1.24'"
           jarsigner -verify play-release/app/build/outputs/bundle/release/app-release.aab
-          cp "$APK" Sions-Sanger-1.23.apk
-          cp play-release/app/build/outputs/bundle/release/app-release.aab Sions-Sanger-1.23.aab
+          cp "$APK" Sions-Sanger-1.24.apk
+          cp play-release/app/build/outputs/bundle/release/app-release.aab Sions-Sanger-1.24.aab
           cp play-release/app/src/main/assets/assets/icon-512.png Sions-Sanger-Play-Icon-512.png
       - uses: actions/upload-artifact@v4
         with:
-          name: Sions-Sanger-1.23-Play
+          name: Sions-Sanger-1.24-Play
           path: |
-            Sions-Sanger-1.23.aab
-            Sions-Sanger-1.23.apk
+            Sions-Sanger-1.24.aab
+            Sions-Sanger-1.24.apk
             Sions-Sanger-Play-Icon-512.png
           if-no-files-found: error
