@@ -1,0 +1,110 @@
+name: Sions Sånger – signerad AAB och APK
+
+on:
+  push:
+    branches: ['songs/eight-text-drafts-2026-11-02']
+    paths: ['tv/**', 'rights/**', '.github/workflows/play-aab.yml']
+  workflow_dispatch:
+    inputs:
+      content_mode:
+        description: 'review bygger textutkast; approved kräver godkänt publiceringsmanifest'
+        type: choice
+        options: [review, approved]
+        default: approved
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v4
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+      - name: Testa publiceringsspärr och paketering
+        run: python3 -m unittest discover -s rights -p 'test_*.py' -v
+      - name: Förbered appens funktioner
+        run: |
+          unzip -q Sions_Sanger_Android_Officiell_Build_1.2.zip -d android-source
+          python3 tv/integrate.py android-source
+          npm pack opensheetmusicdisplay@1.9.9 --pack-destination "$RUNNER_TEMP" --silent
+          tar -xOf "$RUNNER_TEMP/opensheetmusicdisplay-1.9.9.tgz" package/build/opensheetmusicdisplay.min.js > android-source/app/src/main/assets/opensheetmusicdisplay.min.js
+          cp tv/OSMD-LICENSE.txt android-source/app/src/main/assets/OSMD-LICENSE.txt
+      - name: Paketera texter och konfigurera release
+        id: content
+        env:
+          REQUESTED_MODE: ${{ inputs.content_mode }}
+        run: |
+          MODE="${REQUESTED_MODE:-approved}"
+          if [ "$MODE" = approved ]; then
+            python3 rights/prepare_play_build.py --root android-source --manifest rights/two-text-public-release.json --version-code "$((200000 + GITHUB_RUN_NUMBER))"
+            echo 'label=APPROVED' >> "$GITHUB_OUTPUT"
+          else
+            python3 rights/prepare_play_build.py --root android-source --manifest rights/eight-song-text-drafts.json --review --version-code "$((200000 + GITHUB_RUN_NUMBER))"
+            echo 'label=REVIEW-NOT-FOR-PUBLICATION' >> "$GITHUB_OUTPUT"
+          fi
+      - name: Återställ och kontrollera befintlig nyckel
+        env:
+          SIONS_SIGNING_KEY_B64: ${{ secrets.SIONS_SIGNING_KEY_B64 }}
+        run: |
+          python3 - <<'PY'
+          import os, base64, pathlib
+          data = os.environ.get('SIONS_SIGNING_KEY_B64', '').strip()
+          if not data: raise SystemExit('Befintlig signeringsnyckel saknas. Ingen ny nyckel skapas.')
+          p = pathlib.Path('android-source/sions-signing.p12')
+          p.write_bytes(base64.b64decode(data, validate=True))
+          p.chmod(0o600)
+          PY
+          keytool -exportcert -keystore android-source/sions-signing.p12 -storetype PKCS12 -storepass android -alias androiddebugkey -file "$RUNNER_TEMP/sions-cert.der"
+          echo "dd65ba4802942445bee1227499ee895f193e57834846f85d8dff92f8ef16c5c9  $RUNNER_TEMP/sions-cert.der" | sha256sum --check --status
+      - name: Bygg signerad release-AAB och testbar APK
+        run: |
+          sdkmanager 'platforms;android-36' 'build-tools;36.0.0'
+          gradle -p android-source --no-daemon :app:bundleRelease :app:assembleRelease
+          mkdir deliverables
+          cp android-source/app/build/outputs/bundle/release/app-release.aab deliverables/Sions-Sanger-1.22.aab
+          cp android-source/app/build/outputs/apk/release/app-release.apk deliverables/Sions-Sanger-1.22.apk
+          cp android-source/app/src/main/assets/BUILD-STATUS.txt deliverables/BUILD-STATUS.txt
+          cp android-source/app/src/main/assets/song-sources.json deliverables/song-sources.json
+      - name: Verifiera paket, API, signering och inbyggda texter
+        run: |
+          jarsigner -verify deliverables/Sions-Sanger-1.22.aab
+          keytool -printcert -jarfile deliverables/Sions-Sanger-1.22.aab -rfc > "$RUNNER_TEMP/aab-cert.pem"
+          openssl x509 -in "$RUNNER_TEMP/aab-cert.pem" -outform DER -out "$RUNNER_TEMP/aab-cert.der"
+          echo "dd65ba4802942445bee1227499ee895f193e57834846f85d8dff92f8ef16c5c9  $RUNNER_TEMP/aab-cert.der" | sha256sum --check --status
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs deliverables/Sions-Sanger-1.22.apk
+          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging deliverables/Sions-Sanger-1.22.apk > "$RUNNER_TEMP/badging.txt"
+          python3 - <<'PY'
+          import json, os, pathlib, re, zipfile
+          badging = pathlib.Path(os.environ['RUNNER_TEMP'], 'badging.txt').read_text()
+          assert "package: name='se.sionssanger.app'" in badging
+          assert "targetSdkVersion:'36'" in badging
+          assert 'application-debuggable' not in badging
+          with zipfile.ZipFile('deliverables/Sions-Sanger-1.22.aab') as z:
+              html = z.read('base/assets/index.html').decode()
+              found = json.loads(re.search(r'<script id="initialSongs"[^>]*>(.*?)</script>', html, re.S).group(1))['songs']
+              assert len(found) in (2, 8)
+              ids = {s['song_number'] for s in found}
+              assert ids == ({9,50} if len(found) == 2 else {7,9,20,22,31,415,46,50})
+              if len(found) == 2:
+                  assert 'Sions Sånger · Granskning' not in html
+                  assert not any(n.lower().endswith(('.mp3','.opus','.ogg','.wav','.m4a','.musicxml','.mxl','.pdf')) for n in z.namelist())
+              assert all(s['sections'] for s in found)
+              assert not any(n.endswith(('.p12','.jks','.keystore')) for n in z.namelist())
+          print('Verifierat: valt sångurval, API 36, rätt paketnamn, release och inga privata nycklar i AAB.')
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Sions-Sanger-1.22-${{ steps.content.outputs.label }}
+          path: deliverables/*
+          if-no-files-found: error
+      - name: Radera temporär nyckelfil
+        if: always()
+        run: rm -f android-source/sions-signing.p12

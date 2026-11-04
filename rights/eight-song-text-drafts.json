@@ -1,0 +1,156 @@
+{
+  "schemaVersion": 1,
+  "mode": "draft-only",
+  "preparedOn": "2026-11-02",
+  "releaseAllowed": false,
+  "rightsCleared": false,
+  "description": "Åtta önskade sånger med textutkast. Nr 9 transkriberad från användarens sångbokssida; övriga från äldre nätkällor. Inte publiceringsmanifest och inte inbyggt i appen.",
+  "songs": [
+    {
+      "id": "7",
+      "title": "Nu tacken Gud, allt folk",
+      "appSongNumber": 7,
+      "releaseAllowed": false,
+      "rightsStatus": "text_source_draft_pending_scan_comparison",
+      "sourceUrl": "https://hymnary.org/hymn/LSAS1913/S19",
+      "specificEdition": "Lutherförbundets Sångbok 1913, S19",
+      "verses": [
+        "Nu tacken Gud, allt folk,\nMed hjärtans fröjd och gamman,\nFör stora ting, dem han\nGör med oss allesamman:\nDen från vårt moderslif,\nAf nåd och stor miskund,\nSå mycket godt oss gjort\nOch än gör hvarje stund.",
+        "Den nåderike Gud,\nHan oss ock här förläne,\nAtt vi med hjärtans fröjd\nI frid städs honom tjäne;\nOch Herren, stor af nåd,\nOss vare alltid blid,\nOss vare Herren när,\nNu och i evig tid.",
+        "Pris vare dig, o Gud,\nO Fader, Son och Ande,\nHögtlofvad, store Gud!\nAf oss i allo lande!\nDu som af evighet,\nTreenig Gud förvisst,\nHar varit, är och blir,\nHögtlofvad först och sist."
+      ],
+      "notes": "Textutkast; sor i nätkällans OCR har rättats till stor mot 1819 års text. Ej verifierat mot Sions Sånger 1948. Inga noter eller ljud.",
+      "additionalSourceUrl": "https://sv.wikisource.org/wiki/Wikisource:Projekt_1819_års_psalmbok"
+    },
+    {
+      "id": "9",
+      "title": "Lova den Herre",
+      "releaseAllowed": false,
+      "rightsStatus": "identified_from_user_scan_pending_rights_review",
+      "verses": [
+        "Lova den Herre som tronar i glans och i ära,\nUpp, o min själ, att din hyllning åt konungen bära.\nHarpornas ljud\nPrise ock Herren, din Gud,\nHerren, så ljuvlig, så nära!",
+        "Lova den Herre, vars hand hela världen betvingar,\nSom dig på örnvingar burit, på mäktiga vingar,\nSom dig beskärt\nVad för ditt hjärta var kärt,\nFröjd utan gräns han dig bringar.",
+        "Lova hans namn! Detta lov, o min själ, du ej glömme,\nHela ditt liv den barmhärtiges under berömme!\nHan är ditt ljus.\nLyft dig ur stoft och ur grus,\nLovet i evighet strömme!"
+      ],
+      "notes": "Tre verser transkriberade från användarens foto av s. 16. Radbrytningar och noternas stavelsebindestreck normaliserade. Författarnamn återges som tryckta. Texten identifierad; separat rättighetsgranskning och korrektur återstår. Ingen fyrstämmig notsats eller ljudinspelning inkluderad.",
+      "appSongNumber": 9,
+      "authors": [
+        "J. Neander",
+        "C. A. Torén"
+      ],
+      "melodyCredit": "Tysk melodi 1600-talet",
+      "specificEdition": "Sions Sånger, användarens uppgivna 1948 års utgåva, s. 16, nr 9; Mkl. 69",
+      "sourceType": "user_uploaded_page_photo",
+      "sourceFile": "image-1793613482342.jpg"
+    },
+    {
+      "id": "20",
+      "title": "Upp, min tunga, att lovsjunga",
+      "appSongNumber": 20,
+      "releaseAllowed": false,
+      "rightsStatus": "text_source_draft_pending_scan_comparison",
+      "sourceUrl": "https://sv.wikisource.org/wiki/Upp,_min_tunga,_att_lovsjunga",
+      "specificEdition": "Wallins bearbetning 1816, fyra verser; äldre ord menlöst och förer, moderniserad stavning",
+      "verses": [
+        "Upp, min tunga,\natt lovsjunga\nHjälten, som på korsets stam\nför oss blödde,\nled och dödde,\nsom ett menlöst offerlamm.\nHan ur griften\nefter Skriften\nnu i ära träder fram.",
+        "Han fullgjorde\nvad vi borde\noch blev vår rättfärdighet.\nHan avvände\nvårt elände\nför båd tid och evighet.\nHan förvärvde\natt vi ärvde\nljus och frid och salighet.",
+        "Vi förlossas,\normen krossas,\navgrundens och dödens makt\nnu är bunden.\nFrån den stunden\nallt är Sonen underlagt.\nNu är helat\nvad vi felat\noch Guds nåd i ljuset bragt.",
+        "Gamla, unga\nmå lovsjunga\nFaderns makt och härlighet\noch hembära\nSonen ära\nför så stor barmhärtighet,\nprisa Anden,\nsom vid handen\nförer oss till salighet."
+      ],
+      "notes": "Textutkast för Wallins fyra verser, inte den tidigare elvaversiga 1695-texten. Wikisource anger att 1986 års utgåva bytte menlöst till skuldlöst och förer till leder; de äldre orden används här. Exakt jämförelse med Sions Sånger 1948 återstår. Inga noter eller ljud ingår.",
+      "authors": [
+        "Venantius Fortunatus",
+        "Gustaf Ållon",
+        "Johan Olof Wallin"
+      ]
+    },
+    {
+      "id": "22",
+      "title": "Allena Gud i himmelrik",
+      "appSongNumber": 22,
+      "releaseAllowed": false,
+      "rightsStatus": "text_source_draft_pending_scan_comparison",
+      "sourceUrl": "https://sv.wikisource.org/wiki/Allena_Gud_i_himmelrik",
+      "specificEdition": "1819 års psalmbok, nr 24",
+      "verses": [
+        "Allena Gud i himmelrik\nMå lov och pris tillhöra\nFör all den nåd, han kärleksrik\nMed oss har velat göra!\nHan jorden skänkt stor fröjd och frid.\nAck, mänskan må väl glädjas vid\nGuds evigt goda vilja.",
+        "Vi prisa, vi tillbedja dig,\nDitt namn städs vare lovat.\nO Fader, du som nådelig\nOss med allt gott begåvat.\nAllting du haver i ditt våld,\nOch dig är ej en suck fördold.\nVäl den dig rättsligt fruktar!",
+        "O Jesu Krist, Guds ende Son,\nSom såg vår själafara\noch att oss frälsa därifrån\nDig själv ej ville spara.\nDu med din kärlek och din död\nFörlöser oss av syndens nöd,\nNär vi på dig förtrösta.",
+        "Du är allen vår frälserman,\nSom himlen oss upplåter;\nDu är Guds rena Lamm, som kan\noss nåd förvärva åter.\nDu är allen vår salighet,\nDu är för tid och evighet\nVårt hopp, o Jesu Kriste!",
+        "O Helge And', gör själen from,\nFörnöjd och oförfärad!\nGör hjärtat till en helgedom,\nDär Gud i allt blir ärad.\nGiv stöd, giv tröst i all vår brist.\nHjälp, att vi tro på Jesus Krist\nBåd' nu och alltid. Amen."
+      ],
+      "notes": "Textutkast. Ej verifierat mot Sions Sånger 1948; inga noter eller ljud ingår."
+    },
+    {
+      "id": "31a",
+      "title": "Jag lyfter mina händer",
+      "appSongNumber": 31,
+      "releaseAllowed": false,
+      "rightsStatus": "text_source_draft_pending_scan_comparison",
+      "sourceUrl": "https://sv.wikisource.org/wiki/Jag_lyfter_mina_händer",
+      "specificEdition": "Wikisource-transkription; exakt tryckt förlaga återstår att jämföra",
+      "verses": [
+        "Jag lyfter mina händer\nUpp till Guds berg och hus,\nFrån dem han hjälpen sänder\nOch skickar ut sitt ljus.\nMig Herren alltid leder,\nSom jord och himmel gjort;\nHan hör mig när jag beder,\nOch skyddar mig alltfort.",
+        "Han låter mina fötter\nEj slinta, ty han är\nEn väktare ej trötter\nOch blir mig alltid när.\nHan nådigt mig bevarar\nOch skyddar mig från fall,\nMig dag och natt försvarar,\nVälsignar ock mitt kall.",
+        "Allt ont han från mig vänder\nOch frälsar kropp och själ.\nVad än som här mig händer,\nSå slutar det dock väl.\nMin utgång han bevarar,\nMin ingång likaså:\nSin nåd Gud aldrig sparar\nFör dem med honom stå."
+      ],
+      "notes": "Textutkast. Ej verifierat mot Sions Sånger 1948; inga noter eller ljud ingår."
+    },
+    {
+      "id": "31b",
+      "title": "Befall i Herrens händer",
+      "appSongNumber": 415,
+      "releaseAllowed": false,
+      "rightsStatus": "text_source_draft_pending_scan_comparison",
+      "sourceUrl": "https://sv.wikisource.org/wiki/Befall_i_Herrens_händer",
+      "specificEdition": "Wallins version 1816; 1819 års psalmbok nr 224",
+      "verses": [
+        "Befall i Herrens händer\nDin möda och din väg,\nOch hur sig världen vänder,\nHans ord i hjärtat äg.\nTy intet ord är givet,\nSå fast som Herrens ord,\nOch ingen gärning blivit,\nSom ej i Gud är gjord.",
+        "För lycka, bröd och, ära\nI denna värld ej strid.\nLåt sorgen dig ej tära\nFör denna korta tid.\nDet är till andra strider\nDig Herren kallat har,\nDet är för andra tider\nHan lönen åt dig spar.",
+        "Här gäller det att verka\nHans verk, som dig har sänt,\nOch med hans Ande stärka\nDet liv hos dig han tänt.\nHär gäller det att söka\nFörst hans rättfärdighet\nOch med all id föröka\nHans rikes härlighet.",
+        "Så strid med helig iver\nMot mörker, synd och flärd,\nOch vet, att segern bliver\nI Kristi namn beskärd.\nI glädjen och i nöden\nStå fast vid Herrens bud.\nGör väl, gör rätt i döden:\nDet övriga gör Gud.",
+        "Tro ej han löftet bryter,\nTro ej han från dig flyr,\nDå stormen mot dig ryter\nOch dundret kring dig gnyr:\nHan går på stormens vingar,\nHan far på dundrets vagn\nOch själva skadan tvingar\nAtt tjäna dig till gagn.",
+        "Var trofast! Natten dagas,\nRen purpras österns rand.\nAllt mörker skall förjagas\nUtav den Starkes hand,\nSom ur sitt tjäll Orion\nOch morgonstjärnan för\nOch nåden över Sion\nI arladaggen strör.",
+        "Alltså Guds hjälp förbida\nOch räds ej mänskors hot.\nÄr Herren på din sida,\nHo kan dig stå emot?\nSin kraft han dem förlänar,\nSom vandra i hans bud.\nAllt till det bästa tjänar\nFör dem som älska Gud."
+      ],
+      "notes": "Textutkast. Ej verifierat mot Sions Sånger 1948; inga noter eller ljud ingår."
+    },
+    {
+      "id": "46",
+      "title": "Den signade dag",
+      "appSongNumber": 46,
+      "releaseAllowed": false,
+      "rightsStatus": "text_source_draft_pending_scan_comparison",
+      "sourceUrl": "https://sv.wikisource.org/wiki/Den_signade_dag",
+      "specificEdition": "Wallins bearbetning; exakt tryckt förlaga återstår att jämföra",
+      "verses": [
+        "Den signade dag som vi nu här se\nAv himmelen till oss nedkomma,\nHan blive oss säll, han låte sig te\nOss alla till glädje och fromma!\nJa, Herren den högste oss alla i dag\nFör synder och sorger bevare!",
+        "Den signade dag, den signade tid\nVar morgon jag månde betänka,\nDå nådenes sol så härlig och blid\nRann upp för all världen att blänka\nOch herdarne hörde Guds änglar i skyn,\nSom sjöngo, att dagen var kommen.",
+        "Ack, saliga dag, ej uppenbar\nFör världens fåfängliga trälar\nDu strålar så skön, du lyser så klar\nFör fromma och menlösa själar,\nFör enfaldens öga och oskuldens tro\nNu och förutan all ände.",
+        "Om än varje träd och gräs på vår mark\nFått stämma och talande tunga,\nOm djurens och fåglarnas, ljuvlig och stark,\nSom änglarnes röst kunde sjunga,\nFörmådde de aldrig till fyllest Guds Son,\nVår Frälsare Jesus, lova.",
+        "Men såsom en fågel mot himmelens höjd\nSig lyfter på lediga vingar,\nHan lovar sin Gud, är glad och förnöjd,\nNär han över jorden sig svingar,\nSå lyfter sig själen i hjärtelig fröjd\nTill himlen med lovsång och böner.",
+        "Ack, låtom oss lova och bedja vår Gud,\nNär stunderna växla och skrida,\nSå skole vi stärkas att hålla hans bud\nOch vaka och tåligen lida.\nJa, låtom oss verka med allvar och flit,\nSå länge oss dagen förunnas.",
+        "Ty dagen han är dock aldrig så lång,\nAtt icke dess afton skall stunda;\nDå lämnas vårt verk, då tystnar vår sång:\nMå vi det med allvar begrunda!\nVi blive utburne, och sömnen blir tung\nI graven, vår slutliga boning.",
+        "Ack, give då Gud, vi honom så tjänt\nMed allt vad av honom vi äga,\nSå nyttjat de pund oss Herren förlänt,\nAtt han till envar måtte säga:\nGack in i din Herres glädje, gack in,\nDu tjänare, gode och trogne!",
+        "När vi skole till vårt fädernesland\nOch skiljas vid detta elände,\nBefalle vi Gud vår själ uti hand\nOch glade från världen oss vände.\nJa, Herren han give i Jesu namn\nVår vandring en fröjdefull ände!"
+      ],
+      "notes": "Textutkast. Ej verifierat mot Sions Sånger 1948; inga noter eller ljud ingår."
+    },
+    {
+      "id": "50",
+      "title": "Din klara sol går åter opp",
+      "appSongNumber": 50,
+      "releaseAllowed": false,
+      "rightsStatus": "text_source_draft_pending_scan_comparison",
+      "sourceUrl": "https://sv.wikisource.org/wiki/Din_klara_sol_går_åter_opp",
+      "specificEdition": "Wallins text 1814; exakt tryckt förlaga återstår att jämföra",
+      "verses": [
+        "Din klara sol går åter opp.\nJag tackar dig, min Gud.\nMed kraft och mod och nyfött hopp\njag höjer glädjens ljud.",
+        "Din sol går opp för ond och god,\nför alla som för mig.\nO må jag så i tålamod\noch kärlek likna dig.",
+        "O må jag ock med flit och dygd\noch måtta i begär\nän kunna glädjas i ditt skygd\nvar dag du mig beskär.",
+        "Då skall jag, trygg i råd och dåd,\ntill dig, o Fader, fly\noch än förnimma att din nåd\när varje morgon ny."
+      ],
+      "notes": "Textutkast. Ej verifierat mot Sions Sånger 1948; inga noter eller ljud ingår."
+    }
+  ]
+}

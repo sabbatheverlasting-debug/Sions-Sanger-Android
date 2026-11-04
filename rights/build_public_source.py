@@ -24,7 +24,13 @@ def verified_songs(manifest, count=20):
         seen.add(sid)
         if song.get("releaseAllowed") is not True: raise ValueError(f"Sång {sid}: individuellt klartecken saknas.")
         rights = song.get("rights") or {}
-        for field in REQUIRED_RIGHTS:
+        text_only = song.get("contentScope") == "text-only"
+        if text_only:
+            if any(song.get(k) for k in ("audioFile", "musicXmlFile", "scoreFile", "scoreFiles", "noteFile", "noteFiles", "melodyFile", "arrangementFile")):
+                raise ValueError(f"Sång {sid}: text-only får inte inkludera media.")
+            if any(rights.get(k) != "not_included" for k in ("melody", "arrangement", "recording")):
+                raise ValueError(f"Sång {sid}: undantagna medier måste anges som not_included.")
+        for field in (("originalText", "swedishEdition") if text_only else REQUIRED_RIGHTS):
             if rights.get(field) != "cleared": raise ValueError(f"Sång {sid}: {field} ej klarerat.")
         if song.get("audioFile") and rights.get("recording") != "cleared":
             raise ValueError(f"Sång {sid}: inspelningen är inte klarerad.")
